@@ -1,0 +1,68 @@
+{
+  "channels": [
+    {
+      "id": "sabiduria_diaria",
+      "name": "Sabiduría Diaria",
+      "owner": "Ayub (Main)",
+      "handle": "@sabiduriadiaria-g6p",
+      "speaker": "Dra. Nazareth Castellanos",
+      "language": "es",
+      "niche": "Neurociencia & Psicología",
+      "schedule_hours": 72,
+      "prime_time_utc": 16,
+      "repo": "ayubkhokhar7733/youtube-motivational",
+      "workflow": "repurpose.yml",
+      "is_public_repo": false,
+      "color": "amber",
+      "badge": "FLAGSHIP"
+    },
+    {
+      "id": "nephew_neuro",
+      "name": "Mente & Enfoque",
+      "owner": "Nephew",
+      "handle": "@mente-enfoque",
+      "speaker": "Dra. Marian Rojas Estapé",
+      "language": "es",
+      "niche": "Psiquiatría & Manejo del Estrés",
+      "schedule_hours": 72,
+      "prime_time_utc": 16,
+      "repo": "ayubkhokhar7733/channel-mente-enfoque",
+      "workflow": "repurpose.yml",
+      "is_public_repo": true,
+      "color": "emerald",
+      "badge": "FAMILY"
+    },
+    {
+      "id": "brother_stoic",
+      "name": "The Stoic Frontier",
+      "owner": "Brother",
+      "handle": "@stoicfrontier",
+      "speaker": "Marcus Aurelius / Seneca",
+      "language": "en",
+      "niche": "Stoic Philosophy & Resilience",
+      "schedule_hours": 48,
+      "prime_time_utc": 18,
+      "repo": "ayubkhokhar7733/channel-stoic-frontier",
+      "workflow": "repurpose.yml",
+      "is_public_repo": true,
+      "color": "indigo",
+      "badge": "FAMILY"
+    },
+    {
+      "id": "cousin_mindset",
+      "name": "Hábitos de Acero",
+      "owner": "Cousin",
+      "handle": "@habitosdeacero",
+      "speaker": "Dr. Mario Alonso Puig",
+      "language": "es",
+      "niche": "Desarrollo Personal & Liderazgo",
+      "schedule_hours": 72,
+      "prime_time_utc": 16,
+      "repo": "ayubkhokhar7733/channel-habitos-acero",
+      "workflow": "repurpose.yml",
+      "is_public_repo": true,
+      "color": "rose",
+      "badge": "FAMILY"
+    }
+  ]
+}

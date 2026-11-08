@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "buildCommand": null,
+  "outputDirectory": "public",
+  "routes": [
+    {
+      "src": "/api/trigger",
+      "dest": "/api/trigger.js"
+    },
+    {
+      "src": "/api/channels",
+      "dest": "/api/channels.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    }
+  ]
+}
