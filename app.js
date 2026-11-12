@@ -48,10 +48,10 @@ const DEFAULT_CHANNELS = [
     badge: "FAMILY"
   },
   {
-    id: "cousin_mindset",
+    id: "habitos_de_acero",
     name: "Hábitos de Acero",
-    owner: "Cousin",
-    handle: "@habitosdeacero",
+    owner: "Brother",
+    handle: "@HábitosdeAcero2008",
     speaker: "Dr. Mario Alonso Puig",
     language: "es",
     niche: "Desarrollo Personal & Liderazgo",
