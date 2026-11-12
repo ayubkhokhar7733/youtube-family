@@ -79,6 +79,71 @@ const DEFAULT_CHANNELS = [
 
 let channels = [];
 let activeChannel = null;
+let selectedAudioFile = null;
+let selectedThumbFile = null;
+let isOwnerLocked = false;
+const UPLOAD_CHUNK_SIZE = 10 * 1024 * 1024; // 10 MB raw per GitHub Contents API PUT
+
+// Parse URL params for direct per-owner portal links (?channel=id&lock=1)
+function getPortalParams() {
+  const params = new URLSearchParams(window.location.search);
+  const channel = params.get("channel") || params.get("c") || "";
+  const lockVal = params.get("lock") || params.get("owner") || "";
+  const locked = lockVal === "1" || lockVal === "true";
+  return { channel, locked };
+}
+
+function extractYoutubeId(url) {
+  if (!url) return "";
+  const trimmed = url.trim();
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+  const patterns = [
+    /[?&]v=([a-zA-Z0-9_-]{11})/,
+    /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/(?:shorts|live|embed)\/([a-zA-Z0-9_-]{11})/
+  ];
+  for (const re of patterns) {
+    const m = trimmed.match(re);
+    if (m) return m[1];
+  }
+  return "";
+}
+
+function arrayBufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  const sliceLen = 0x8000; // 32 KB chunks avoid call-stack limits
+  const parts = [];
+  for (let i = 0; i < bytes.length; i += sliceLen) {
+    parts.push(String.fromCharCode.apply(null, bytes.subarray(i, i + sliceLen)));
+  }
+  return btoa(parts.join(""));
+}
+
+async function imageFileToJpegBase64(file) {
+  if (file.type === "image/jpeg" || /\.jpe?g$/i.test(file.name)) {
+    const buf = await file.arrayBuffer();
+    return arrayBufferToBase64(buf);
+  }
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth || 1280;
+      canvas.height = img.naturalHeight || 720;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+      resolve(dataUrl.split(",")[1]);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Could not decode selected thumbnail image."));
+    };
+    img.src = objectUrl;
+  });
+}
 
 // Initialize Lucide icons
 function refreshIcons() {
@@ -111,13 +176,33 @@ async function initChannels() {
     } catch (e) {}
   }
 
-  // Set active channel
-  const savedActiveId = localStorage.getItem("fleet_active_channel_id");
-  activeChannel = channels.find(c => c.id === savedActiveId) || channels[0];
+  const portal = getPortalParams();
+  isOwnerLocked = portal.locked;
 
+  const urlTarget = portal.channel ? channels.find(c => c.id === portal.channel) : null;
+  const savedActiveId = localStorage.getItem("fleet_active_channel_id");
+  activeChannel = urlTarget || channels.find(c => c.id === savedActiveId) || channels[0];
+
+  applyOwnerLockUI();
   renderChannelList();
   renderActiveChannel();
   loadRecentRuns();
+}
+
+function applyOwnerLockUI() {
+  const selectorSection = document.getElementById("channel-selector-section");
+  const ownerPill = document.getElementById("owner-lock-pill");
+  const copyLinkBtn = document.getElementById("btn-copy-owner-link");
+
+  if (isOwnerLocked) {
+    if (selectorSection) selectorSection.classList.add("hidden");
+    if (copyLinkBtn) copyLinkBtn.classList.add("hidden");
+    if (ownerPill) ownerPill.classList.remove("hidden");
+  } else {
+    if (selectorSection) selectorSection.classList.remove("hidden");
+    if (copyLinkBtn) copyLinkBtn.classList.remove("hidden");
+    if (ownerPill) ownerPill.classList.add("hidden");
+  }
 }
 
 // Render channel cards
@@ -166,6 +251,7 @@ function renderChannelList() {
 
 // Switch active channel
 function switchChannel(channelId) {
+  if (isOwnerLocked) return;
   const target = channels.find(c => c.id === channelId);
   if (target) {
     activeChannel = target;
@@ -184,9 +270,9 @@ function renderActiveChannel() {
   document.getElementById("active-channel-badge").textContent = activeChannel.badge || "FAMILY";
   document.getElementById("active-channel-avatar").textContent = activeChannel.name.charAt(0);
   document.getElementById("active-channel-details").innerHTML = `
+    Owner: <span class="text-amber-300 font-medium">${activeChannel.owner}</span> • 
     Speaker: <span class="text-white font-medium">${activeChannel.speaker}</span> • 
-    Schedule: <span class="text-emerald-400 font-medium">Every ${activeChannel.schedule_hours / 24} Days (${activeChannel.schedule_hours}h gap)</span> • 
-    Niche: <span class="text-gray-300">${activeChannel.niche}</span>
+    Schedule: <span class="text-emerald-400 font-medium">Every ${activeChannel.schedule_hours / 24} Days (${activeChannel.schedule_hours}h gap)</span>
   `;
   document.getElementById("active-channel-repo").textContent = activeChannel.repo;
   document.getElementById("active-repo-badge").textContent = activeChannel.is_public_repo ? "Public (Unlimited)" : "Private Repo";
@@ -205,9 +291,144 @@ function renderActiveChannel() {
   refreshIcons();
 }
 
-// GitHub API Client Helper
-function getGithubToken() {
+// Per-channel GitHub Token Helper (isolated per channel with master fallback)
+function getGithubToken(channelId) {
+  const id = channelId || (activeChannel && activeChannel.id);
+  if (id) {
+    const scoped = localStorage.getItem(`fleet_github_pat_${id}`);
+    if (scoped) return scoped;
+  }
   return localStorage.getItem("fleet_github_pat") || "";
+}
+
+function setGithubToken(channelId, tokenValue) {
+  const id = channelId || (activeChannel && activeChannel.id);
+  const key = id ? `fleet_github_pat_${id}` : "fleet_github_pat";
+  if (tokenValue) {
+    localStorage.setItem(key, tokenValue);
+  } else {
+    localStorage.removeItem(key);
+  }
+}
+
+async function githubUpsertFile(owner, repo, filePath, base64Content, commitMsg, token) {
+  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
+  const headers = {
+    "Authorization": `Bearer ${token}`,
+    "Accept": "application/vnd.github.v3+json",
+    "Content-Type": "application/json"
+  };
+
+  let existingSha = null;
+  const checkRes = await fetch(`${apiUrl}?ref=main`, { headers });
+  if (checkRes.ok) {
+    const existing = await checkRes.json();
+    existingSha = existing.sha;
+  }
+
+  const body = {
+    message: commitMsg,
+    content: base64Content,
+    branch: "main"
+  };
+  if (existingSha) body.sha = existingSha;
+
+  const putRes = await fetch(apiUrl, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify(body)
+  });
+
+  if (!putRes.ok) {
+    const errText = await putRes.text();
+    throw new Error(`Upload failed (${filePath}): HTTP ${putRes.status} — Ensure token has Contents: Read & Write. ${errText}`);
+  }
+  return putRes.json();
+}
+
+async function cleanupStaleAudioFiles(owner, repo, vid, token) {
+  const dirUrl = `https://api.github.com/repos/${owner}/${repo}/contents/data/incoming_audio?ref=main`;
+  const headers = {
+    "Authorization": `Bearer ${token}`,
+    "Accept": "application/vnd.github.v3+json",
+    "Content-Type": "application/json"
+  };
+  const res = await fetch(dirUrl, { headers });
+  if (!res.ok) return;
+
+  const items = await res.json();
+  if (!Array.isArray(items)) return;
+
+  const prefix = `${vid}_audio.`;
+  for (const item of items) {
+    if (item.type === "file" && item.name.startsWith(prefix)) {
+      await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${item.path}`, {
+        method: "DELETE",
+        headers,
+        body: JSON.stringify({
+          message: `Clean stale incoming audio ${item.name}`,
+          sha: item.sha,
+          branch: "main"
+        })
+      });
+    }
+  }
+}
+
+async function uploadMediaAssets(owner, repo, vid, token, onStatus) {
+  if (selectedAudioFile) {
+    const rawExt = (selectedAudioFile.name.split(".").pop() || "mp3").toLowerCase();
+    const ext = ["mp3", "m4a", "wav", "webm", "opus"].includes(rawExt) ? rawExt : "mp3";
+
+    onStatus(`Preparing ${selectedAudioFile.name} for upload...`);
+    await cleanupStaleAudioFiles(owner, repo, vid, token);
+
+    const totalSize = selectedAudioFile.size;
+    if (totalSize <= UPLOAD_CHUNK_SIZE) {
+      onStatus(`Uploading audio (${(totalSize / 1048576).toFixed(1)} MB) to ${owner}/${repo}...`);
+      const buf = await selectedAudioFile.arrayBuffer();
+      const b64 = arrayBufferToBase64(buf);
+      await githubUpsertFile(
+        owner,
+        repo,
+        `data/incoming_audio/${vid}_audio.${ext}`,
+        b64,
+        `Dashboard upload audio ${vid}`,
+        token
+      );
+    } else {
+      const totalParts = Math.ceil(totalSize / UPLOAD_CHUNK_SIZE);
+      for (let i = 0; i < totalParts; i++) {
+        const start = i * UPLOAD_CHUNK_SIZE;
+        const end = Math.min(totalSize, start + UPLOAD_CHUNK_SIZE);
+        const partName = `${vid}_audio.${ext}.part${String(i).padStart(3, "0")}`;
+        onStatus(`Uploading audio chunk ${i + 1}/${totalParts} (${((end / totalSize) * 100).toFixed(0)}%)...`);
+        const buf = await selectedAudioFile.slice(start, end).arrayBuffer();
+        const b64 = arrayBufferToBase64(buf);
+        await githubUpsertFile(
+          owner,
+          repo,
+          `data/incoming_audio/${partName}`,
+          b64,
+          `Dashboard upload ${partName}`,
+          token
+        );
+      }
+    }
+  }
+
+  if (selectedThumbFile) {
+    onStatus(`Uploading custom thumbnail for ${vid}...`);
+    const thumbB64 = await imageFileToJpegBase64(selectedThumbFile);
+    await githubUpsertFile(
+      owner,
+      repo,
+      `assets/thumbnails/${vid}_thumb.jpg`,
+      thumbB64,
+      `Dashboard upload thumbnail ${vid}`,
+      token
+    );
+  }
 }
 
 // Trigger Workflow via GitHub Actions REST API
@@ -322,9 +543,48 @@ async function loadRecentRuns() {
   }
 }
 
+// Settings Modal Controls (global so triggerWorkflow / submit can open it)
+function openSettingsModal() {
+  const modalSettings = document.getElementById("modal-settings");
+  const inputPat = document.getElementById("input-pat");
+  const channelLabel = document.getElementById("settings-channel-label");
+  const repoLabel = document.getElementById("settings-repo-label");
+  if (!modalSettings) return;
+
+  if (activeChannel) {
+    if (channelLabel) channelLabel.textContent = `${activeChannel.name} (${activeChannel.owner})`;
+    if (repoLabel) repoLabel.textContent = activeChannel.repo;
+  }
+  if (inputPat) inputPat.value = getGithubToken();
+  modalSettings.classList.remove("hidden");
+  modalSettings.classList.add("flex");
+}
+
+function closeSettingsModal() {
+  const modalSettings = document.getElementById("modal-settings");
+  if (!modalSettings) return;
+  modalSettings.classList.add("hidden");
+  modalSettings.classList.remove("flex");
+}
+
 // Setup Event Listeners
 document.addEventListener("DOMContentLoaded", () => {
   initChannels();
+
+  const inputUrl = document.getElementById("input-url");
+  const vidHint = document.getElementById("detected-vid-hint");
+  function updateVidHint() {
+    if (!inputUrl || !vidHint) return;
+    const vid = extractYoutubeId(inputUrl.value);
+    if (vid) {
+      vidHint.textContent = `Detected Video ID: ${vid}`;
+      vidHint.classList.remove("hidden");
+    } else {
+      vidHint.textContent = "";
+      vidHint.classList.add("hidden");
+    }
+  }
+  if (inputUrl) inputUrl.addEventListener("input", updateVidHint);
 
   // Clipboard Paste Button
   const btnPaste = document.getElementById("btn-paste");
@@ -332,14 +592,102 @@ document.addEventListener("DOMContentLoaded", () => {
     btnPaste.addEventListener("click", async () => {
       try {
         const text = await navigator.clipboard.readText();
-        if (text && text.includes("youtube.com")) {
-          document.getElementById("input-url").value = text.trim();
+        if (text && (text.includes("youtube.com") || text.includes("youtu.be"))) {
+          inputUrl.value = text.trim();
+          updateVidHint();
         } else {
           alert("Clipboard does not contain a valid YouTube link.");
         }
       } catch (e) {
         alert("Clipboard permission required. Please paste manually into the input box.");
       }
+    });
+  }
+
+  // Copy Direct Owner Portal Link Button
+  const btnCopyOwnerLink = document.getElementById("btn-copy-owner-link");
+  if (btnCopyOwnerLink) {
+    btnCopyOwnerLink.addEventListener("click", async () => {
+      if (!activeChannel) return;
+      const base = `${window.location.origin}${window.location.pathname}`;
+      const ownerUrl = `${base}?channel=${encodeURIComponent(activeChannel.id)}&lock=1`;
+      try {
+        await navigator.clipboard.writeText(ownerUrl);
+        const origHtml = btnCopyOwnerLink.innerHTML;
+        btnCopyOwnerLink.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i><span>Copied Owner Link!</span>`;
+        refreshIcons();
+        setTimeout(() => {
+          btnCopyOwnerLink.innerHTML = origHtml;
+          refreshIcons();
+        }, 2000);
+      } catch (e) {
+        prompt(`Copy direct dashboard link for ${activeChannel.owner}:`, ownerUrl);
+      }
+    });
+  }
+
+  // Audio & Thumbnail File Picker + Drag & Drop
+  const inputAudio = document.getElementById("input-audio-file");
+  const dropAudio = document.getElementById("drop-audio");
+  const audioLabel = document.getElementById("audio-file-label");
+  const audioSub = document.getElementById("audio-file-sub");
+  const btnClearAudio = document.getElementById("btn-clear-audio");
+
+  function setAudioFile(file) {
+    selectedAudioFile = file || null;
+    if (file) {
+      audioLabel.textContent = file.name;
+      audioSub.textContent = `${(file.size / 1048576).toFixed(2)} MB • Ready to upload to ${activeChannel?.repo || "repo"}`;
+      btnClearAudio.classList.remove("hidden");
+    } else {
+      audioLabel.textContent = "Choose or drop .mp3 / .m4a file";
+      audioSub.textContent = "Optional — uploaded straight to your channel repo";
+      btnClearAudio.classList.add("hidden");
+      if (inputAudio) inputAudio.value = "";
+    }
+  }
+
+  if (inputAudio) inputAudio.addEventListener("change", (e) => setAudioFile(e.target.files[0]));
+  if (btnClearAudio) btnClearAudio.addEventListener("click", () => setAudioFile(null));
+  if (dropAudio) {
+    dropAudio.addEventListener("dragover", (e) => { e.preventDefault(); dropAudio.classList.add("border-amber-400"); });
+    dropAudio.addEventListener("dragleave", () => dropAudio.classList.remove("border-amber-400"));
+    dropAudio.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropAudio.classList.remove("border-amber-400");
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) setAudioFile(e.dataTransfer.files[0]);
+    });
+  }
+
+  const inputThumb = document.getElementById("input-thumb-file");
+  const dropThumb = document.getElementById("drop-thumb");
+  const thumbLabel = document.getElementById("thumb-file-label");
+  const thumbSub = document.getElementById("thumb-file-sub");
+  const btnClearThumb = document.getElementById("btn-clear-thumb");
+
+  function setThumbFile(file) {
+    selectedThumbFile = file || null;
+    if (file) {
+      thumbLabel.textContent = file.name;
+      thumbSub.textContent = `${(file.size / 1024).toFixed(0)} KB • Saved as high-CTR JPEG thumbnail`;
+      btnClearThumb.classList.remove("hidden");
+    } else {
+      thumbLabel.textContent = "Choose or drop 16:9 thumbnail image";
+      thumbSub.textContent = "Auto-generated if left empty";
+      btnClearThumb.classList.add("hidden");
+      if (inputThumb) inputThumb.value = "";
+    }
+  }
+
+  if (inputThumb) inputThumb.addEventListener("change", (e) => setThumbFile(e.target.files[0]));
+  if (btnClearThumb) btnClearThumb.addEventListener("click", () => setThumbFile(null));
+  if (dropThumb) {
+    dropThumb.addEventListener("dragover", (e) => { e.preventDefault(); dropThumb.classList.add("border-amber-400"); });
+    dropThumb.addEventListener("dragleave", () => dropThumb.classList.remove("border-amber-400"));
+    dropThumb.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropThumb.classList.remove("border-amber-400");
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) setThumbFile(e.dataTransfer.files[0]);
     });
   }
 
@@ -350,32 +698,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Settings Modal Controls
-  const modalSettings = document.getElementById("modal-settings");
   const btnSettings = document.getElementById("btn-settings");
   const btnCloseSettings = document.getElementById("btn-close-settings");
   const btnSaveSettings = document.getElementById("btn-save-settings");
   const inputPat = document.getElementById("input-pat");
-
-  function openSettingsModal() {
-    inputPat.value = getGithubToken();
-    modalSettings.classList.remove("hidden");
-    modalSettings.classList.add("flex");
-  }
-
-  function closeSettingsModal() {
-    modalSettings.classList.add("hidden");
-    modalSettings.classList.remove("flex");
-  }
 
   if (btnSettings) btnSettings.addEventListener("click", openSettingsModal);
   if (btnCloseSettings) btnCloseSettings.addEventListener("click", closeSettingsModal);
   if (btnSaveSettings) {
     btnSaveSettings.addEventListener("click", () => {
       const val = inputPat.value.trim();
-      localStorage.setItem("fleet_github_pat", val);
+      setGithubToken(activeChannel && activeChannel.id, val);
       closeSettingsModal();
       loadRecentRuns();
-      alert("Settings saved successfully!");
+      alert(`Token saved for ${activeChannel ? activeChannel.name : "studio"}!`);
     });
   }
 
@@ -446,16 +782,39 @@ document.addEventListener("DOMContentLoaded", () => {
       const scheduleHours = document.getElementById("select-schedule").value;
       const upload = document.getElementById("check-upload").checked;
 
+      const token = getGithubToken();
+      if (!token) {
+        openSettingsModal();
+        alert(`Please paste the GitHub Access Token for ${activeChannel.name} first.`);
+        return;
+      }
+
+      const vid = extractYoutubeId(url);
+      if ((selectedAudioFile || selectedThumbFile) && !vid) {
+        alert("Please paste a valid YouTube URL before uploading an MP3 or thumbnail.");
+        return;
+      }
+
+      const [owner, repo] = activeChannel.repo.split("/");
+
       btnSubmit.disabled = true;
       btnSubmit.classList.add("opacity-50", "cursor-not-allowed");
-      btnSubmit.innerHTML = `<i data-lucide="loader" class="w-5 h-5 animate-spin"></i> Dispatching Cloud Runner...`;
+      btnSubmit.innerHTML = `<i data-lucide="loader" class="w-5 h-5 animate-spin"></i> Working...`;
       refreshIcons();
 
       statusCard.classList.remove("hidden");
-      statusTitle.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Launching Cloud Pipeline on ${activeChannel.repo}...`;
-      statusMsg.textContent = `Connecting to GitHub Actions for channel: ${activeChannel.name}...`;
+      statusTitle.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Preparing ${activeChannel.repo}...`;
+      statusMsg.textContent = `Connecting to GitHub for channel: ${activeChannel.name}...`;
+      statusLink.classList.add("hidden");
 
       try {
+        if (selectedAudioFile || selectedThumbFile) {
+          await uploadMediaAssets(owner, repo, vid, token, (msg) => {
+            statusMsg.textContent = msg;
+          });
+        }
+
+        statusMsg.textContent = `Dispatching GitHub Actions workflow for ${activeChannel.name}...`;
         const result = await triggerWorkflow({
           youtube_url: url,
           speaker_name: speaker,
@@ -470,10 +829,12 @@ document.addEventListener("DOMContentLoaded", () => {
         statusLink.href = `https://github.com/${result.owner}/${result.repo}/actions`;
         statusLink.classList.remove("hidden");
 
-        // Clear URL
+        // Reset inputs for next run
         document.getElementById("input-url").value = "";
+        updateVidHint();
+        setAudioFile(null);
+        setThumbFile(null);
 
-        // Reload runs in 5 seconds
         setTimeout(() => loadRecentRuns(), 4000);
       } catch (err) {
         statusTitle.innerHTML = `❌ Launch Failed`;
