@@ -52,7 +52,7 @@ const DEFAULT_CHANNELS = [
     name: "Hábitos de Acero",
     owner: "Brother",
     handle: "@HábitosdeAcero2008",
-    speaker: "Dr. Mario Alonso Puig",
+    speaker: "Dr Mario",
     language: "es",
     niche: "Desarrollo Personal & Liderazgo",
     schedule_hours: 72,

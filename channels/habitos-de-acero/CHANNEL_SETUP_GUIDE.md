@@ -4,7 +4,7 @@
 > **Handle**: `@HábitosdeAcero2008`  
 > **Owner**: Brother (Manager: `ayubkhokhar7733@gmail.com`)  
 > **Primary Niche & Language**: Personal Development, Discipline, Leadership & Applied Neuroscience (`es` / Español)  
-> **Primary Authority Speaker**: Dr. Mario Alonso Puig *(+ compatible Spanish leadership/neuroscience experts)*
+> **Primary Authority Speaker**: `Dr Mario` *(Dr. Mario Alonso Puig)*
 
 ---
 
@@ -51,10 +51,10 @@ En Hábitos de Acero transformamos conferencias magistrales e ideas científicas
 
 ### A. Basic Info
 * **Country of residence**: Select **Spain** or **United States** *(or your brother's / your primary billing country; does not block Spanish audiences as long as video language is Spanish)*
-* **Keywords** *(414 / 500 chars — copy & paste exact string)*:
+* **Keywords** *(424 / 500 chars — copy & paste exact string)*:
 
 ```text
-habitos de acero, mario alonso puig, dr mario alonso puig, desarrollo personal, mentalidad de acero, disciplina diaria, neurociencia aplicada, psicologia practica, superacion personal, liderazgo personal, habitos atomicos, crecimiento personal, fortaleza mental, como cambiar tu mente, motivacion en espanol, gestion emocional, control mental, productividad personal, cerebro y habitos, podcast desarrollo personal
+habitos de acero, dr mario, mario alonso puig, dr mario alonso puig, desarrollo personal, mentalidad de acero, disciplina diaria, neurociencia aplicada, psicologia practica, superacion personal, liderazgo personal, habitos atomicos, crecimiento personal, fortaleza mental, como cambiar tu mente, motivacion en espanol, gestion emocional, control mental, productividad personal, cerebro y habitos, podcast desarrollo personal
 ```
 
 ### B. Advanced Settings
@@ -72,12 +72,12 @@ habitos de acero, mario alonso puig, dr mario alonso puig, desarrollo personal, 
 ## 4. Upload Defaults (`YouTube Studio → Settings → Upload defaults`)
 
 ### A. Basic Info
-* **Title**: *(leave blank — automated per video via `[Curiosity Hook] | Dr. Mario Alonso Puig`)*
+* **Title**: *(leave blank — automated per video via `[Curiosity Hook] | Dr Mario`)*
 * **Visibility**: `Private` *(Safety fallback; our automated uploader explicitly sets `scheduled` with `publishAt`)*
 * **Description Template**:
 
 ```text
-#habitosdeacero #marioalonsopuig #desarrollopersonal #disciplina
+#habitosdeacero #drmario #marioalonsopuig #desarrollopersonal #disciplina
 
 Descubre cómo fortalecer tu mentalidad, transformar tus hábitos diarios y desarrollar una disciplina inquebrantable con herramientas prácticas de psicología y liderazgo.
 
@@ -86,7 +86,7 @@ Descubre cómo fortalecer tu mentalidad, transformar tus hábitos diarios y desa
 • Control emocional y claridad mental
 • Estrategias prácticas para superar tus límites
 
-🎙️ Voz / Orador de referencia en este canal: Dr. Mario Alonso Puig y referentes del crecimiento personal.
+🎙️ Voz / Orador de referencia en este canal: Dr Mario (Dr. Mario Alonso Puig) y referentes del crecimiento personal.
 
 🔔 Suscríbete a Hábitos de Acero para recibir nuevas lecciones cada 3 días:
 https://www.youtube.com/@HábitosdeAcero2008?sub_confirmation=1
@@ -94,10 +94,10 @@ https://www.youtube.com/@HábitosdeAcero2008?sub_confirmation=1
 ⚠️ Nota editorial: Este video combina fragmentos de audio con edición visual educativa e ilustrativa generada para reforzar el aprendizaje.
 ```
 
-* **Tags** *(254 / 500 chars)*:
+* **Tags** *(264 / 500 chars)*:
 
 ```text
-habitos de acero, mario alonso puig, dr mario alonso puig, desarrollo personal, motivacion, disciplina, mentalidad ganadora, psicologia, neurociencia, liderazgo, superacion personal, habitos diarios, exito personal, fortaleza mental, crecimiento personal
+habitos de acero, dr mario, mario alonso puig, dr mario alonso puig, desarrollo personal, motivacion, disciplina, mentalidad ganadora, psicologia, neurociencia, liderazgo, superacion personal, habitos diarios, exito personal, fortaleza mental, crecimiento personal
 ```
 
 ### B. Advanced Settings
@@ -113,7 +113,7 @@ habitos de acero, mario alonso puig, dr mario alonso puig, desarrollo personal, 
 
 ## 5. Viral Production & Scheduling Rules
 
-* **Title Rule**: `[High-Stakes Hook / Curiosity Gap] | Dr. Mario Alonso Puig` *(55–78 chars max; never put the speaker name first).*
-* **Thumbnail Rule**: Authentic direct-gaze portrait of the speaker + 3-tier contrast typography + speaker badge (`DR. MARIO ALONSO PUIG`).
+* **Title Rule**: `[High-Stakes Hook / Curiosity Gap] | Dr Mario` *(55–78 chars max; never put the speaker name first).*
+* **Thumbnail Rule**: Authentic direct-gaze portrait of Dr Mario + bold contrast typography (`#FFD400` gold/yellow + crisp white + red accent box, matching the high-CTR layout) + speaker badge (`DR MARIO`).
 * **Schedule Rhythm**: **72-hour gap** (every 3 days) at **`16:00 UTC`** (17:00 Madrid / 10:00 Mexico City / 21:00 PKT).
 * **Automation Repo**: `ayubkhokhar7733/channel-habitos-acero` (Public repo for unlimited free GitHub Actions minutes).
