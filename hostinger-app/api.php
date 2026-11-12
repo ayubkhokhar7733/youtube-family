@@ -300,6 +300,26 @@ try {
             }
             break;
 
+        case 'get_queue':
+            $cid = $_GET['channel'] ?? '';
+            $target = $CHANNELS[$cid] ?? null;
+            if (!$target) {
+                send_json(['error' => 'Channel not found'], 404);
+            }
+            if (!$user['is_admin'] && !in_array('*', $user['channels'], true) && !in_array($cid, $user['channels'], true)) {
+                send_json(['error' => 'Access denied to this channel queue'], 403);
+            }
+            $repo = $target['repo'];
+            try {
+                $gh_res = github_curl("https://api.github.com/repos/{$repo}/contents/data/queue.json?ref=main");
+                if ($gh_res['code'] === 200 && isset($gh_res['body']['content'])) {
+                    $json_str = base64_decode($gh_res['body']['content']);
+                    send_json(['channel' => $cid, 'queue' => json_decode($json_str, true) ?: []]);
+                }
+            } catch (Exception $e) {}
+            send_json(['channel' => $cid, 'queue' => []]);
+            break;
+
         default:
             send_json(['error' => 'Unknown API action'], 400);
     }

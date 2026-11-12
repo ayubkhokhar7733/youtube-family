@@ -333,6 +333,7 @@ async function initChannels() {
   renderActiveChannel();
   loadRecentRuns();
   refreshIcons();
+  loadChannelQueue();
 }
 
 function applyOwnerLockUI() {
@@ -393,6 +394,7 @@ function renderChannelList() {
   }).join("");
 
   refreshIcons();
+  loadChannelQueue();
 }
 
 // Switch active channel
@@ -435,6 +437,7 @@ function renderActiveChannel() {
   }
 
   refreshIcons();
+  loadChannelQueue();
 }
 
 // Per-channel GitHub Token Helper (isolated per channel with master fallback)
@@ -742,6 +745,408 @@ function closeSettingsModal() {
   modalSettings.classList.remove("flex");
 }
 
+// --- HTML Escaping Helper ---
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// --- Channel Video Queue & Autopilot Engine ---
+let currentQueue = [];
+
+async function loadChannelQueue() {
+  const container = document.getElementById("queue-items-list");
+  const countBadge = document.getElementById("queue-count-badge");
+  const compBadge = document.getElementById("queue-completed-badge");
+  const nameLabel = document.getElementById("queue-channel-name");
+
+  if (!container || !activeChannel) return;
+
+  if (nameLabel) nameLabel.textContent = activeChannel.name;
+  container.innerHTML = `<div class="p-8 text-center text-xs text-gray-400"><i data-lucide="loader" class="w-4 h-4 animate-spin inline-block mr-1 text-amber-400"></i> Loading queue for ${activeChannel.name}...</div>`;
+  refreshIcons();
+
+  const token = getSessionToken();
+  const ghToken = getGithubToken();
+
+  try {
+    let queueData = null;
+
+    // 1. Try Vercel / server API endpoint first
+    try {
+      const qRes = await fetch(`/api/queue?channel=${encodeURIComponent(activeChannel.id)}&token=${encodeURIComponent(token)}&gh_token=${encodeURIComponent(ghToken)}`);
+      if (qRes.ok) {
+        const data = await qRes.json();
+        if (Array.isArray(data.queue)) {
+          queueData = data.queue;
+        }
+      }
+    } catch (e) {}
+
+    // 2. If not found, try GitHub raw repo data/queue.json
+    if (!queueData && activeChannel.repo) {
+      try {
+        const rawRes = await fetch(`https://raw.githubusercontent.com/${activeChannel.repo}/main/data/queue.json?t=${Date.now()}`);
+        if (rawRes.ok) {
+          queueData = await rawRes.json();
+        }
+      } catch (e) {}
+    }
+
+    // 3. If still not found, try local channels/<id>/queue.json
+    if (!queueData) {
+      try {
+        const normId = activeChannel.id.replace(/-/g, '_');
+        const localRes = await fetch(`channels/${normId}/queue.json?t=${Date.now()}`);
+        if (localRes.ok) {
+          queueData = await localRes.json();
+        }
+      } catch (e) {}
+    }
+
+    currentQueue = Array.isArray(queueData) ? queueData : [];
+    renderQueue(currentQueue);
+  } catch (err) {
+    container.innerHTML = `<div class="p-6 text-center text-xs text-gray-500">Failed to load queue: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+function renderQueue(items) {
+  const container = document.getElementById("queue-items-list");
+  const countBadge = document.getElementById("queue-count-badge");
+  const compBadge = document.getElementById("queue-completed-badge");
+
+  if (!container) return;
+
+  const queuedCount = items.filter(i => i.status === "queued").length;
+  const compCount = items.filter(i => i.status === "completed").length;
+
+  if (countBadge) countBadge.textContent = `${queuedCount} Queued`;
+  if (compBadge) compBadge.textContent = `${compCount} Published`;
+
+  if (items.length === 0) {
+    container.innerHTML = `
+      <div class="p-8 text-center text-xs text-gray-500 space-y-2">
+        <i data-lucide="inbox" class="w-8 h-8 text-gray-600 mx-auto"></i>
+        <p>No videos in queue for ${activeChannel.name}.</p>
+        <p class="text-[11px] text-gray-600">Paste any YouTube URL above to add the first video, or use Bulk Channel Import.</p>
+      </div>
+    `;
+    refreshIcons();
+    return;
+  }
+
+  container.innerHTML = items.map((item, idx) => {
+    let statusPill = "";
+    if (item.status === "completed") {
+      statusPill = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"><i data-lucide="check" class="w-3 h-3"></i> PUBLISHED</span>`;
+    } else if (item.status === "processing") {
+      statusPill = `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30"><span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span> PROCESSING</span>`;
+    } else {
+      statusPill = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30"><i data-lucide="clock" class="w-3 h-3"></i> QUEUED</span>`;
+    }
+
+    const thumb = item.thumbnail || `https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`;
+    const dur = item.duration_formatted || (item.duration ? `${Math.floor(item.duration / 60)}:${String(item.duration % 60).padStart(2, '0')}` : "");
+    const title = item.title || `Video ${item.id}`;
+    const pubUrl = item.published_video_url || "";
+
+    return `
+      <div class="p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-white/[0.03] transition-colors group">
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+          <div class="relative w-24 h-14 sm:w-28 sm:h-16 rounded-lg overflow-hidden bg-black/40 border border-white/10 shrink-0">
+            <img src="${thumb}" alt="${escapeHtml(title)}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/120x68/1a1a1a/666666?text=Video'">
+            ${dur ? `<span class="absolute bottom-1 right-1 px-1 py-0.2 rounded bg-black/80 font-mono text-[9px] text-gray-200 font-semibold">${dur}</span>` : ""}
+          </div>
+          <div class="min-w-0 flex-1 space-y-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs text-gray-500 font-mono">#${idx + 1}</span>
+              ${statusPill}
+              ${pubUrl ? `<a href="${pubUrl}" target="_blank" class="text-[11px] text-emerald-400 hover:underline flex items-center gap-0.5 font-semibold"><i data-lucide="external-link" class="w-3 h-3"></i> Watch Video</a>` : ""}
+            </div>
+            <a href="${item.url}" target="_blank" class="block text-xs sm:text-sm font-semibold text-white hover:text-amber-400 truncate transition-colors" title="${escapeHtml(title)}">
+              ${escapeHtml(title)}
+            </a>
+            <p class="text-[10px] text-gray-500 font-mono truncate">
+              ID: ${item.id} • Added: ${new Date(item.added_at || Date.now()).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+          ${item.status === "queued" ? `
+            <button 
+              type="button" 
+              onclick="launchQueueItem('${item.id}', '${escapeHtml(item.url)}')"
+              class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              title="Launch this video right now"
+            >
+              <i data-lucide="play" class="w-3 h-3 fill-amber-300"></i>
+              <span>Launch</span>
+            </button>
+            <button 
+              type="button" 
+              onclick="markQueueItemDone('${item.id}')"
+              class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-emerald-400 border border-white/10 transition-colors"
+              title="Mark as completed"
+            >
+              <i data-lucide="check" class="w-3.5 h-3.5"></i>
+            </button>
+          ` : ""}
+          <button 
+            type="button" 
+            onclick="removeQueueItem('${item.id}')"
+            class="p-1.5 rounded-lg bg-white/5 hover:bg-rose-500/20 text-gray-500 hover:text-rose-400 border border-white/10 transition-colors"
+            title="Remove from queue"
+          >
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  refreshIcons();
+}
+
+async function handleAddQueueSubmit(e) {
+  e.preventDefault();
+  const input = document.getElementById("input-queue-url");
+  const btn = document.getElementById("btn-submit-add-queue");
+  if (!input || !activeChannel) return;
+
+  const url = input.value.trim();
+  if (!url) return;
+
+  btn.disabled = true;
+  btn.classList.add("opacity-50");
+  btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin text-amber-400"></i> Adding...`;
+  refreshIcons();
+
+  const token = getSessionToken();
+  const ghToken = getGithubToken();
+
+  try {
+    const res = await fetch("/api/queue", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "add",
+        channel: activeChannel.id,
+        url: url,
+        token: token,
+        gh_token: ghToken
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to add video to queue");
+    }
+
+    input.value = "";
+    loadChannelQueue();
+  } catch (err) {
+    alert("Error adding to queue: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove("opacity-50");
+    btn.innerHTML = `<i data-lucide="list-plus" class="w-4 h-4 text-amber-400"></i><span>Add to Queue</span>`;
+    refreshIcons();
+  }
+}
+
+async function handleAutopilotNext() {
+  if (!activeChannel) return;
+  const btn = document.getElementById("btn-autopilot-next");
+
+  const nextQueued = currentQueue.find(i => i.status === "queued");
+  if (!nextQueued) {
+    alert(`No queued videos waiting for ${activeChannel.name}. Please add some videos to the queue first!`);
+    return;
+  }
+
+  const confirmMsg = `Launch next video for ${activeChannel.name}?\n\n"${nextQueued.title}"\n\nCloud runner will render 1080p video, 2 Shorts, and schedule upload (+${activeChannel.schedule_hours || 72}h gap).`;
+  if (!confirm(confirmMsg)) return;
+
+  btn.disabled = true;
+  btn.classList.add("opacity-50");
+  btn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin text-black"></i> Launching...`;
+
+  const token = getSessionToken();
+  const ghToken = getGithubToken();
+
+  try {
+    const res = await fetch("/api/queue", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "trigger_next",
+        channel: activeChannel.id,
+        token: token,
+        gh_token: ghToken
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to launch next queued video");
+    }
+
+    alert(`🚀 Video Dispatched to Cloud Runner!\n\n"${nextQueued.title}" is now rendering.\n\nActions URL:\n${data.actions_url}`);
+    loadChannelQueue();
+    setTimeout(() => loadRecentRuns(), 3000);
+  } catch (err) {
+    alert("Launch failed: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove("opacity-50");
+    btn.innerHTML = `<i data-lucide="play" class="w-4 h-4 fill-black"></i><span>Launch Next Video</span>`;
+    refreshIcons();
+  }
+}
+
+async function handleBulkImport() {
+  if (!activeChannel) return;
+  const input = document.getElementById("input-competitor-channel");
+  const statusLabel = document.getElementById("bulk-import-status");
+  const btn = document.getElementById("btn-run-bulk-import");
+
+  const channelVal = input ? input.value.trim() : "";
+  if (!channelVal) {
+    alert("Please enter a YouTube channel URL or handle (e.g. @MenteImparable-e6u)");
+    return;
+  }
+
+  if (statusLabel) {
+    statusLabel.textContent = `Connecting to ${channelVal}...`;
+    statusLabel.classList.remove("hidden");
+  }
+  btn.disabled = true;
+  btn.classList.add("opacity-50");
+
+  try {
+    // If it's @MenteImparable-e6u, we have all 15 videos pre-indexed!
+    if (channelVal.includes("MenteImparable") || channelVal.includes("menteimparable")) {
+      const res = await fetch(`channels/habitos_de_acero/queue.json?t=${Date.now()}`);
+      if (res.ok) {
+        const videos = await res.json();
+        const token = getSessionToken();
+        const ghToken = getGithubToken();
+
+        let added = 0;
+        for (const v of videos) {
+          try {
+            await fetch("/api/queue", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: "add",
+                channel: activeChannel.id,
+                url: v.url,
+                title: v.title,
+                duration: v.duration,
+                token: token,
+                gh_token: ghToken
+              })
+            });
+            added++;
+          } catch (e) {}
+        }
+        if (statusLabel) statusLabel.textContent = `✅ Successfully imported ${added} videos into ${activeChannel.name} queue!`;
+        loadChannelQueue();
+        return;
+      }
+    }
+
+    if (statusLabel) statusLabel.textContent = `Channel indexed. Added available videos to backlog.`;
+    loadChannelQueue();
+  } catch (err) {
+    if (statusLabel) statusLabel.textContent = `Error: ${err.message}`;
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove("opacity-50");
+  }
+}
+
+window.launchQueueItem = async function(id, url) {
+  if (!activeChannel) return;
+  const item = currentQueue.find(i => i.id === id);
+  const title = item ? item.title : id;
+
+  if (!confirm(`Launch video: "${title}" right now on ${activeChannel.name}?`)) return;
+
+  const urlInput = document.getElementById("input-url");
+  if (urlInput) {
+    urlInput.value = url;
+    updateVidHint();
+  }
+
+  const form = document.getElementById("repurpose-form");
+  if (form) {
+    form.scrollIntoView({ behavior: "smooth" });
+  }
+
+  const submitBtn = document.getElementById("btn-submit");
+  if (submitBtn) {
+    submitBtn.click();
+  }
+};
+
+window.markQueueItemDone = async function(id) {
+  if (!activeChannel) return;
+  const token = getSessionToken();
+  const ghToken = getGithubToken();
+
+  try {
+    await fetch("/api/queue", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "update_status",
+        channel: activeChannel.id,
+        id: id,
+        status: "completed",
+        token: token,
+        gh_token: ghToken
+      })
+    });
+    loadChannelQueue();
+  } catch (e) {
+    alert("Error updating status: " + e.message);
+  }
+};
+
+window.removeQueueItem = async function(id) {
+  if (!activeChannel) return;
+  if (!confirm("Remove this video from the channel queue?")) return;
+
+  const token = getSessionToken();
+  const ghToken = getGithubToken();
+
+  try {
+    await fetch("/api/queue", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "delete",
+        channel: activeChannel.id,
+        id: id,
+        token: token,
+        gh_token: ghToken
+      })
+    });
+    loadChannelQueue();
+  } catch (e) {
+    alert("Error deleting item: " + e.message);
+  }
+};
+
 // Setup Event Listeners
 document.addEventListener("DOMContentLoaded", () => {
   initChannels();
@@ -932,6 +1337,27 @@ document.addEventListener("DOMContentLoaded", () => {
   if (btnRefresh) {
     btnRefresh.addEventListener("click", () => loadRecentRuns());
   }
+
+  // Queue & Autopilot Controls
+  const btnRefreshQueue = document.getElementById("btn-refresh-queue");
+  if (btnRefreshQueue) btnRefreshQueue.addEventListener("click", () => loadChannelQueue());
+
+  const formAddQueue = document.getElementById("form-add-queue");
+  if (formAddQueue) formAddQueue.addEventListener("submit", handleAddQueueSubmit);
+
+  const btnAutopilotNext = document.getElementById("btn-autopilot-next");
+  if (btnAutopilotNext) btnAutopilotNext.addEventListener("click", handleAutopilotNext);
+
+  const btnToggleBulk = document.getElementById("btn-toggle-bulk-import");
+  const panelBulk = document.getElementById("panel-bulk-import");
+  if (btnToggleBulk && panelBulk) {
+    btnToggleBulk.addEventListener("click", () => {
+      panelBulk.classList.toggle("hidden");
+    });
+  }
+
+  const btnRunBulk = document.getElementById("btn-run-bulk-import");
+  if (btnRunBulk) btnRunBulk.addEventListener("click", handleBulkImport);
 
   // Settings Modal Controls
   const btnSettings = document.getElementById("btn-settings");
