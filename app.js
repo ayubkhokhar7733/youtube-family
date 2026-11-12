@@ -74,6 +74,21 @@ const DEFAULT_CHANNELS = [
     workflow: "repurpose.yml",
     color: "amber",
     badge: "FAMILY"
+  },
+  {
+    id: "el_arte_psique",
+    name: "El Arte de la Psique 2.0",
+    owner: "Shafqat Chadiyo",
+    handle: "@elartedelapsique2.0",
+    speaker: "Carl Jung",
+    language: "es",
+    niche: "Psicología Profunda & Filosofía",
+    schedule_hours: 72,
+    repo: "ayubkhokhar7733/channel-el-arte-psique",
+    workflow: "repurpose.yml",
+    is_public_repo: true,
+    color: "amber",
+    badge: "FAMILY"
   }
 ];
 

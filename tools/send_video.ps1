@@ -94,14 +94,16 @@ function Ensure-Config {
     Write-Host "Select your channel or choose Custom:"
     Write-Host "  1) Habitos de Acero (ayubkhokhar7733/channel-habitos-acero)"
     Write-Host "  2) Mejora Dia a Dia (ayubkhokhar7733/channel-mejora-dia-a-dia)"
-    Write-Host "  3) Custom GitHub Repo"
-    $choice = Read-Host "Enter 1, 2, or 3"
+    Write-Host "  3) El Arte de la Psique 2.0 (ayubkhokhar7733/channel-el-arte-psique)"
+    Write-Host "  4) Custom GitHub Repo"
+    $choice = Read-Host "Enter 1, 2, 3, or 4"
 
     $repo = ""
     $speaker = ""
     switch ($choice.Trim()) {
-        "1" { $repo = "ayubkhokhar7733/channel-habitos-acero"; $speaker = "Mario Alonso Puig" }
+        "1" { $repo = "ayubkhokhar7733/channel-habitos-acero"; $speaker = "Dr Mario" }
         "2" { $repo = "ayubkhokhar7733/channel-mejora-dia-a-dia"; $speaker = "Dra. Nazareth Castellanos" }
+        "3" { $repo = "ayubkhokhar7733/channel-el-arte-psique"; $speaker = "Carl Jung" }
         default {
             $repo = (Read-Host "GitHub Repo (owner/repo)").Trim()
             $speaker = (Read-Host "Default Speaker Name").Trim()
