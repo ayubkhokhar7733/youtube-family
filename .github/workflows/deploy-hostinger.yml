@@ -1,0 +1,51 @@
+name: Deploy Fleet Studio to Hostinger
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'hostinger-app/**'
+      - '.github/workflows/deploy-hostinger.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Sync to Hostinger Web Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # ── Method A: Deploy via SSH Key if HOSTINGER_SSH_KEY is set ──
+      - name: Deploy via SSH Key (Rsync)
+        if: "${{ secrets.HOSTINGER_SSH_KEY != '' }}"
+        uses: easingthemes/ssh-deploy@v5.1.0
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.HOSTINGER_HOST }}
+          REMOTE_USER: ${{ secrets.HOSTINGER_USER }}
+          REMOTE_PORT: ${{ secrets.HOSTINGER_PORT || '65002' }}
+          SOURCE: "hostinger-app/"
+          TARGET: ${{ secrets.HOSTINGER_TARGET_PATH || 'public_html/' }}
+          EXCLUDES: "/.git/, /README_HOSTINGER.md"
+          SCRIPT_AFTER: |
+            echo "🚀 Deployment finished via SSH Key!"
+
+      # ── Method B: Deploy via SSH Password / SFTP if HOSTINGER_PASSWORD is set ──
+      - name: Deploy via SFTP / Password
+        if: "${{ secrets.HOSTINGER_SSH_KEY == '' && secrets.HOSTINGER_PASSWORD != '' }}"
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          password: ${{ secrets.HOSTINGER_PASSWORD }}
+          port: ${{ secrets.HOSTINGER_PORT || 21 }}
+          protocol: sftp
+          local-dir: ./hostinger-app/
+          server-dir: ${{ secrets.HOSTINGER_TARGET_PATH || 'public_html/' }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/README_HOSTINGER.md
