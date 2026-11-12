@@ -146,7 +146,7 @@ function Process-NextQueueItem {
 
         # 4. Update queue status
         $next.status = "processing"
-        $next.dispatched_at = (Get-Date).ToString("o")
+        $next | Add-Member -NotePropertyName "dispatched_at" -NotePropertyValue (Get-Date).ToString("o") -Force
         Save-ChannelQueue -Path $qData.Path -Items $queue
         Write-Host "📝 Updated queue status to 'processing' in $($qData.Path)" -ForegroundColor Gray
         return $true
