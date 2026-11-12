@@ -1,0 +1,25 @@
+# Protect configuration and sensitive files
+<FilesMatch "^(config\.php|\.user\.ini|\.env|\.git)">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Allow large file uploads for audio and video
+<IfModule mod_php7.c>
+    php_value upload_max_filesize 256M
+    php_value post_max_size 256M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+    php_value memory_limit 512M
+</IfModule>
+
+<IfModule mod_php.c>
+    php_value upload_max_filesize 256M
+    php_value post_max_size 256M
+    php_value max_execution_time 300
+    php_value max_input_time 300
+    php_value memory_limit 512M
+</IfModule>
+
+Options -Indexes
+DirectoryIndex index.php
