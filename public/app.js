@@ -60,6 +60,20 @@ const DEFAULT_CHANNELS = [
     workflow: "repurpose.yml",
     color: "rose",
     badge: "FAMILY"
+  },
+  {
+    id: "mejora_dia_a_dia",
+    name: "Mejora Día a Día",
+    owner: "Zahid Khurshid",
+    handle: "@betterdaybyday0",
+    speaker: "Dra. Nazareth Castellanos",
+    language: "es",
+    niche: "Neurociencia & Mejora Personal",
+    schedule_hours: 72,
+    repo: "ayubkhokhar7733/channel-mejora-dia-a-dia",
+    workflow: "repurpose.yml",
+    color: "amber",
+    badge: "FAMILY"
   }
 ];
 
