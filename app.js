@@ -97,7 +97,69 @@ let activeChannel = null;
 let selectedAudioFile = null;
 let selectedThumbFile = null;
 let isOwnerLocked = false;
+let currentUser = null;
+let authToken = null;
 const UPLOAD_CHUNK_SIZE = 10 * 1024 * 1024; // 10 MB raw per GitHub Contents API PUT
+
+// Client-side Users & Channel Permissions Directory
+const CLIENT_USERS = {
+  admin: {
+    id: "admin",
+    name: "Ayub (Fleet Admin)",
+    password: "admin7733",
+    magicKey: "master-admin-fleet-key-7733",
+    isAdmin: true,
+    channels: ["*"]
+  },
+  shafqat: {
+    id: "shafqat",
+    name: "Shafqat Chadiyo",
+    password: "arte2026",
+    magicKey: "shafqat-arte-psique-9281",
+    isAdmin: false,
+    channels: ["el_arte_psique"]
+  },
+  zahid: {
+    id: "zahid",
+    name: "Zahid Khurshid",
+    password: "mejora2026",
+    magicKey: "zahid-mejora-dia-4819",
+    isAdmin: false,
+    channels: ["mejora_dia_a_dia"]
+  },
+  brother: {
+    id: "brother",
+    name: "Brother",
+    password: "acero2026",
+    magicKey: "brother-habitos-stoic-1934",
+    isAdmin: false,
+    channels: ["habitos_de_acero", "brother_stoic"]
+  },
+  nephew: {
+    id: "nephew",
+    name: "Nephew",
+    password: "enfoque2026",
+    magicKey: "nephew-mente-enfoque-6214",
+    isAdmin: false,
+    channels: ["nephew_neuro"]
+  }
+};
+
+function authenticateClientUser(username, password) {
+  if (!username || !password) return null;
+  const u = CLIENT_USERS[username.toLowerCase().trim()];
+  if (u && u.password === password.trim()) return u;
+  return null;
+}
+
+function authenticateClientMagicKey(key) {
+  if (!key) return null;
+  const trimmed = key.trim();
+  for (const uid in CLIENT_USERS) {
+    if (CLIENT_USERS[uid].magicKey === trimmed) return CLIENT_USERS[uid];
+  }
+  return null;
+}
 
 // Parse URL params for direct per-owner portal links (?channel=id&lock=1)
 function getPortalParams() {
@@ -167,8 +229,77 @@ function refreshIcons() {
   }
 }
 
+async function checkAuthSession() {
+  const params = new URLSearchParams(window.location.search);
+  const magicKey = params.get("key") || params.get("k");
+
+  // 1. Try Magic Key via API or Client Fallback
+  if (magicKey) {
+    try {
+      const res = await fetch("/api/login?key=" + encodeURIComponent(magicKey));
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.user) {
+          localStorage.setItem("fleet_session_user", JSON.stringify(data.user));
+          if (data.token) localStorage.setItem("fleet_auth_token", data.token);
+          currentUser = data.user;
+          authToken = data.token;
+          return currentUser;
+        }
+      }
+    } catch (e) {}
+
+    const clientUser = authenticateClientMagicKey(magicKey);
+    if (clientUser) {
+      currentUser = clientUser;
+      localStorage.setItem("fleet_session_user", JSON.stringify(clientUser));
+      return currentUser;
+    }
+  }
+
+  // 2. Check saved session in localStorage
+  const saved = localStorage.getItem("fleet_session_user");
+  if (saved) {
+    try {
+      currentUser = JSON.parse(saved);
+      authToken = localStorage.getItem("fleet_auth_token") || null;
+      return currentUser;
+    } catch (e) {}
+  }
+
+  currentUser = null;
+  return null;
+}
+
 // Load channels from channels.json or localStorage
 async function initChannels() {
+  const user = await checkAuthSession();
+
+  const authSection = document.getElementById("auth-section");
+  const studioContent = document.getElementById("studio-content");
+  const profileBadge = document.getElementById("user-profile-badge");
+  const profileName = document.getElementById("user-profile-name");
+  const btnLogout = document.getElementById("btn-logout");
+
+  if (!user) {
+    if (authSection) authSection.classList.remove("hidden");
+    if (studioContent) studioContent.classList.add("hidden");
+    if (profileBadge) profileBadge.classList.add("hidden");
+    if (btnLogout) btnLogout.classList.add("hidden");
+    refreshIcons();
+    return;
+  }
+
+  // User is logged in!
+  if (authSection) authSection.classList.add("hidden");
+  if (studioContent) studioContent.classList.remove("hidden");
+  if (profileBadge) {
+    profileBadge.classList.remove("hidden");
+    profileBadge.classList.add("flex");
+  }
+  if (profileName) profileName.textContent = user.name;
+  if (btnLogout) btnLogout.classList.remove("hidden");
+
   try {
     const res = await fetch("channels.json");
     if (res.ok) {
@@ -178,30 +309,30 @@ async function initChannels() {
       channels = DEFAULT_CHANNELS;
     }
   } catch (e) {
-    console.warn("Using default channels list:", e);
     channels = DEFAULT_CHANNELS;
   }
 
-  // Merge any custom user channels from localStorage
-  const savedCustom = localStorage.getItem("fleet_custom_channels");
-  if (savedCustom) {
-    try {
-      const customList = JSON.parse(savedCustom);
-      channels = [...channels, ...customList];
-    } catch (e) {}
+  // Filter channels strictly for this user!
+  if (!user.isAdmin && !(user.channels && user.channels.includes("*"))) {
+    channels = channels.filter(c => user.channels && user.channels.includes(c.id));
   }
 
-  const portal = getPortalParams();
-  isOwnerLocked = portal.locked;
+  activeChannel = channels[0] || null;
 
-  const urlTarget = portal.channel ? channels.find(c => c.id === portal.channel) : null;
-  const savedActiveId = localStorage.getItem("fleet_active_channel_id");
-  activeChannel = urlTarget || channels.find(c => c.id === savedActiveId) || channels[0];
+  // If user has 1 channel (Shafqat, Zahid, Nephew), hide the selector carousel completely!
+  const selectorSection = document.getElementById("channel-selector-section");
+  if (selectorSection) {
+    if (!user.isAdmin && channels.length <= 1) {
+      selectorSection.classList.add("hidden");
+    } else {
+      selectorSection.classList.remove("hidden");
+    }
+  }
 
-  applyOwnerLockUI();
   renderChannelList();
   renderActiveChannel();
   loadRecentRuns();
+  refreshIcons();
 }
 
 function applyOwnerLockUI() {
@@ -446,16 +577,45 @@ async function uploadMediaAssets(owner, repo, vid, token, onStatus) {
   }
 }
 
-// Trigger Workflow via GitHub Actions REST API
+// Trigger Workflow via Vercel /api/trigger or GitHub Actions REST API
 async function triggerWorkflow(params) {
+  const [owner, repo] = activeChannel.repo.split("/");
+  const workflowFile = activeChannel.workflow || "repurpose.yml";
+
+  // 1. Try Vercel Serverless /api/trigger if available (uses server's GITHUB_TOKEN)
+  try {
+    const apiRes = await fetch("/api/trigger", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${authToken || ""}`
+      },
+      body: JSON.stringify({
+        repo: activeChannel.repo,
+        workflow: workflowFile,
+        youtube_url: params.youtube_url,
+        speaker_name: params.speaker_name || activeChannel.speaker,
+        aspect: params.aspect || "landscape",
+        upload: params.upload,
+        privacy: params.privacy || "scheduled",
+        schedule_hours: params.schedule_hours || activeChannel.schedule_hours || 72,
+        gh_token: getGithubToken()
+      })
+    });
+    if (apiRes.ok) {
+      return { success: true, owner, repo, workflowFile };
+    }
+  } catch (e) {
+    // Fall back to direct client GitHub dispatch
+  }
+
+  // 2. Direct client GitHub dispatch fallback
   const token = getGithubToken();
   if (!token) {
     openSettingsModal();
     throw new Error("GitHub Personal Access Token required to launch cloud jobs.");
   }
 
-  const [owner, repo] = activeChannel.repo.split("/");
-  const workflowFile = activeChannel.workflow || "repurpose.yml";
   const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflowFile}/dispatches`;
 
   const payload = {
@@ -585,6 +745,67 @@ function closeSettingsModal() {
 // Setup Event Listeners
 document.addEventListener("DOMContentLoaded", () => {
   initChannels();
+
+  // Login Form Submission
+  const loginForm = document.getElementById("login-form");
+  const btnLoginSubmit = document.getElementById("btn-login-submit");
+  const loginAlert = document.getElementById("login-alert");
+
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      btnLoginSubmit.disabled = true;
+      btnLoginSubmit.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Checking...`;
+      refreshIcons();
+      if (loginAlert) loginAlert.classList.add("hidden");
+
+      const u = document.getElementById("login-username").value.trim();
+      const p = document.getElementById("login-password").value.trim();
+
+      // 1. Try Vercel Serverless /api/login first
+      try {
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: u, password: p })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.user) {
+            localStorage.setItem("fleet_session_user", JSON.stringify(data.user));
+            if (data.token) localStorage.setItem("fleet_auth_token", data.token);
+            window.location.reload();
+            return;
+          }
+        }
+      } catch (err) {}
+
+      // 2. Client-side fallback (for GitHub Pages standalone)
+      const clientUser = authenticateClientUser(u, p);
+      if (clientUser) {
+        localStorage.setItem("fleet_session_user", JSON.stringify(clientUser));
+        window.location.reload();
+      } else {
+        if (loginAlert) {
+          loginAlert.textContent = "Invalid username or passcode. Please check your credentials.";
+          loginAlert.classList.remove("hidden");
+        }
+        btnLoginSubmit.disabled = false;
+        btnLoginSubmit.innerHTML = `<span>Sign In to Studio</span> <i data-lucide="arrow-right" class="w-4 h-4 text-black"></i>`;
+        refreshIcons();
+      }
+    });
+  }
+
+  // Logout button
+  const btnLogout = document.getElementById("btn-logout");
+  if (btnLogout) {
+    btnLogout.addEventListener("click", () => {
+      localStorage.removeItem("fleet_session_user");
+      localStorage.removeItem("fleet_auth_token");
+      window.location.href = window.location.pathname;
+    });
+  }
 
   const inputUrl = document.getElementById("input-url");
   const vidHint = document.getElementById("detected-vid-hint");
