@@ -108,7 +108,7 @@ function Process-NextQueueItem {
         
         $targetMp3 = Join-Path $incDir "$($next.id)_audio.mp3"
         if (-not (Test-Path $targetMp3) -or (Get-Item $targetMp3).Length -lt 1000) {
-            yt-dlp -x --audio-format mp3 -o $targetMp3 $next.url
+            yt-dlp -x --audio-format mp3 --extractor-args "youtube:player_client=android,web" -o $targetMp3 $next.url
         }
 
         if (Test-Path $targetMp3) {

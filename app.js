@@ -1359,6 +1359,86 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnRunBulk = document.getElementById("btn-run-bulk-import");
   if (btnRunBulk) btnRunBulk.addEventListener("click", handleBulkImport);
 
+  // MP3 Grabber Modal Controls
+  const btnQuickGrab = document.getElementById("btn-quick-grab-audio");
+  const modalGrab = document.getElementById("modal-grab-audio");
+  const btnCloseGrab = document.getElementById("btn-close-grab-modal");
+  const btnBridgeFetch = document.getElementById("btn-bridge-fetch");
+  const bridgeStatusPill = document.getElementById("bridge-status-pill");
+
+  async function checkBridgeStatus() {
+    if (!bridgeStatusPill) return false;
+    try {
+      const res = await fetch("http://localhost:7733/status", { signal: AbortSignal.timeout(1500) });
+      if (res.ok) {
+        bridgeStatusPill.textContent = "Online (Ready)";
+        bridgeStatusPill.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+        return true;
+      }
+    } catch (e) {}
+    bridgeStatusPill.textContent = "Offline (Run Start-Audio-Bridge.bat)";
+    bridgeStatusPill.className = "text-[10px] font-bold px-2 py-0.5 rounded bg-white/10 text-gray-400";
+    return false;
+  }
+
+  if (btnQuickGrab && modalGrab) {
+    btnQuickGrab.addEventListener("click", async () => {
+      const urlInput = document.getElementById("input-url");
+      const url = urlInput ? urlInput.value.trim() : "";
+      if (!url) {
+        alert("Please paste a YouTube URL into the Reference URL box first!");
+        urlInput && urlInput.focus();
+        return;
+      }
+      modalGrab.classList.remove("hidden");
+      modalGrab.classList.add("flex");
+      checkBridgeStatus();
+    });
+  }
+
+  if (btnCloseGrab && modalGrab) {
+    btnCloseGrab.addEventListener("click", () => {
+      modalGrab.classList.add("hidden");
+      modalGrab.classList.remove("flex");
+    });
+  }
+
+  if (btnBridgeFetch) {
+    btnBridgeFetch.addEventListener("click", async () => {
+      const urlInput = document.getElementById("input-url");
+      const url = urlInput ? urlInput.value.trim() : "";
+      if (!url) return;
+
+      const vid = extractYoutubeId(url) || "source";
+      btnBridgeFetch.disabled = true;
+      btnBridgeFetch.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Downloading MP3 via Local Bridge...`;
+      refreshIcons();
+
+      try {
+        const downloadUrl = `http://localhost:7733/download?url=${encodeURIComponent(url)}`;
+        const res = await fetch(downloadUrl);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || `Bridge error (${res.status})`);
+        }
+
+        const blob = await res.blob();
+        const file = new File([blob], `${vid}_audio.mp3`, { type: "audio/mpeg" });
+        setAudioFile(file);
+
+        modalGrab.classList.add("hidden");
+        modalGrab.classList.remove("flex");
+        alert(`✅ Success! Downloaded & attached ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB).\nReady for cloud launch!`);
+      } catch (err) {
+        alert(`Bridge error: ${err.message}\n\nPlease make sure tools/Start-Audio-Bridge.bat is running on your PC!`);
+      } finally {
+        btnBridgeFetch.disabled = false;
+        btnBridgeFetch.innerHTML = `<i data-lucide="download" class="w-4 h-4"></i><span>Fetch & Auto-Attach MP3 from Bridge</span>`;
+        refreshIcons();
+      }
+    });
+  }
+
   // Settings Modal Controls
   const btnSettings = document.getElementById("btn-settings");
   const btnCloseSettings = document.getElementById("btn-close-settings");

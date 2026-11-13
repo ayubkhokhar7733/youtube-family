@@ -242,10 +242,18 @@
         <!-- Direct Local Audio + Thumbnail Uploader (Bypasses Cloud YouTube Bot Block) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="space-y-1.5">
-            <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center justify-between">
-              <span>Upload MP3 Audio <span class="text-emerald-400 font-semibold normal-case">(Bypasses YT Block)</span></span>
-              <button type="button" id="btn-clear-audio" class="hidden text-[11px] text-rose-400 hover:underline font-normal">Remove</button>
-            </label>
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold uppercase tracking-wider text-gray-300">
+                <span>Upload MP3 Audio <span class="text-emerald-400 font-semibold normal-case">(Bypasses YT Block)</span></span>
+              </label>
+              <div class="flex items-center gap-2">
+                <button type="button" id="btn-quick-grab-audio" class="text-xs text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 transition-colors" title="Download & auto-attach MP3 in 1 click">
+                  <i data-lucide="zap" class="w-3.5 h-3.5 fill-amber-400"></i>
+                  <span>1-Click Auto-Grab MP3</span>
+                </button>
+                <button type="button" id="btn-clear-audio" class="hidden text-[11px] text-rose-400 hover:underline font-normal">Remove</button>
+              </div>
+            </div>
             <label id="drop-audio" class="flex items-center gap-3 w-full bg-dark-900/70 hover:bg-dark-900 border border-dashed border-white/20 hover:border-amber-400/70 rounded-xl px-4 py-3 cursor-pointer transition-all">
               <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
                 <i data-lucide="music" class="w-4 h-4 text-amber-400"></i>
@@ -494,6 +502,66 @@
     </div><!-- End #studio-content -->
 
   </main>
+
+  <!-- MP3 Grabber Modal -->
+  <div id="modal-grab-audio" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="glass-panel rounded-3xl max-w-lg w-full p-6 space-y-5 border border-white/10 glow-gold">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i data-lucide="zap" class="w-5 h-5 text-amber-400 fill-amber-400"></i>
+          YouTube MP3 Grabber
+        </h3>
+        <button id="btn-close-grab-modal" class="text-gray-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Mode A: Local Audio Bridge -->
+        <div class="p-4 rounded-2xl bg-dark-900/90 border border-white/10 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+              <i data-lucide="cpu" class="w-4 h-4"></i>
+              Local Audio Bridge (Automated)
+            </span>
+            <span id="bridge-status-pill" class="text-[10px] font-bold px-2 py-0.5 rounded bg-white/10 text-gray-400">Checking...</span>
+          </div>
+          <p class="text-xs text-gray-400 leading-relaxed">
+            Run <span class="font-mono text-amber-300">tools/Start-Audio-Bridge.bat</span> on your PC to enable instant in-browser MP3 extraction. Bypasses 100% of YouTube bot blocks.
+          </p>
+          <button 
+            type="button" 
+            id="btn-bridge-fetch"
+            class="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs transition-all flex items-center justify-center gap-2"
+          >
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span>Fetch & Auto-Attach MP3 from Bridge</span>
+          </button>
+        </div>
+
+        <!-- Mode B: 1-Click Fast Web Extractors -->
+        <div class="p-4 rounded-2xl bg-dark-900/90 border border-white/10 space-y-2">
+          <span class="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+            <i data-lucide="globe" class="w-4 h-4 text-blue-400"></i>
+            Instant Direct Web Converters (Mobile & Family)
+          </span>
+          <p class="text-xs text-gray-400 leading-relaxed">
+            Click any fast converter below to download the MP3 in 1 tap, then drop the downloaded file into the studio:
+          </p>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <a id="link-grab-cobalt" href="https://cobalt.tools" target="_blank" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white flex items-center justify-center gap-1.5 transition-colors">
+              <i data-lucide="external-link" class="w-3.5 h-3.5 text-blue-400"></i>
+              <span>Cobalt Web</span>
+            </a>
+            <a id="link-grab-onlymp3" href="https://en.onlymp3.to" target="_blank" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-white flex items-center justify-center gap-1.5 transition-colors">
+              <i data-lucide="external-link" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>OnlyMP3</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Settings Modal (GitHub Token configuration) -->
   <div id="modal-settings" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
