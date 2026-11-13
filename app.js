@@ -359,34 +359,34 @@ function renderChannelList() {
 
   container.innerHTML = channels.map(c => {
     const isActive = activeChannel && activeChannel.id === c.id;
-    const activeBorder = isActive ? "border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/50" : "border-white/10 hover:border-white/20 bg-dark-800/60";
-    const badgeColor = c.badge === "FLAGSHIP" ? "bg-amber-500/20 text-amber-300 border-amber-500/30" : "bg-emerald-500/20 text-emerald-300 border-emerald-500/30";
+    const activeBorder = isActive ? "border-amber-500 bg-amber-50/70 ring-2 ring-amber-400/40 shadow-sm" : "border-slate-200 hover:border-slate-300 bg-white shadow-sm";
+    const badgeColor = c.badge === "FLAGSHIP" ? "bg-amber-100 text-amber-800 border-amber-300" : "bg-emerald-100 text-emerald-800 border-emerald-300";
 
     return `
       <div 
         onclick="switchChannel('${c.id}')"
-        class="glass-panel rounded-2xl p-4 cursor-pointer transition-all ${activeBorder} flex flex-col justify-between"
+        class="studio-card rounded-2xl p-4 cursor-pointer transition-all ${activeBorder} flex flex-col justify-between"
       >
         <div class="flex items-start justify-between gap-2">
           <div class="flex items-center gap-2.5">
-            <div class="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-black text-amber-400 text-sm">
+            <div class="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center font-black text-amber-700 text-sm">
               ${c.name.charAt(0)}
             </div>
             <div>
-              <h4 class="text-sm font-bold text-white tracking-tight">${c.name}</h4>
-              <p class="text-[11px] text-gray-400">${c.owner}</p>
+              <h4 class="text-sm font-bold text-slate-900 tracking-tight">${c.name}</h4>
+              <p class="text-[11px] text-slate-500">${c.owner}</p>
             </div>
           </div>
           <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded border ${badgeColor}">${c.badge || 'FAMILY'}</span>
         </div>
 
-        <div class="mt-3 pt-3 border-t border-white/5 space-y-1">
-          <div class="text-[11px] text-gray-300 truncate">
-            <span class="text-gray-500">Speaker:</span> ${c.speaker}
+        <div class="mt-3 pt-3 border-t border-slate-100 space-y-1">
+          <div class="text-[11px] text-slate-700 truncate">
+            <span class="text-slate-400">Speaker:</span> ${c.speaker}
           </div>
-          <div class="flex items-center justify-between text-[11px] text-gray-400">
+          <div class="flex items-center justify-between text-[11px] text-slate-500">
             <span>Rhythm:</span>
-            <span class="text-amber-400 font-mono font-medium">${c.schedule_hours}h gap</span>
+            <span class="text-amber-700 font-mono font-bold">${c.schedule_hours}h gap</span>
           </div>
         </div>
       </div>
@@ -418,9 +418,9 @@ function renderActiveChannel() {
   document.getElementById("active-channel-badge").textContent = activeChannel.badge || "FAMILY";
   document.getElementById("active-channel-avatar").textContent = activeChannel.name.charAt(0);
   document.getElementById("active-channel-details").innerHTML = `
-    Owner: <span class="text-amber-300 font-medium">${activeChannel.owner}</span> • 
-    Speaker: <span class="text-white font-medium">${activeChannel.speaker}</span> • 
-    Schedule: <span class="text-emerald-400 font-medium">Every ${activeChannel.schedule_hours / 24} Days (${activeChannel.schedule_hours}h gap)</span>
+    Owner: <span class="text-amber-800 font-bold">${activeChannel.owner}</span> • 
+    Speaker: <span class="text-slate-900 font-bold">${activeChannel.speaker}</span> • 
+    Schedule: <span class="text-emerald-700 font-bold">Every ${activeChannel.schedule_hours / 24} Days (${activeChannel.schedule_hours}h gap)</span>
   `;
   document.getElementById("active-channel-repo").textContent = activeChannel.repo;
   document.getElementById("active-repo-badge").textContent = activeChannel.is_public_repo ? "Public (Unlimited)" : "Private Repo";
@@ -685,28 +685,28 @@ async function loadRecentRuns() {
     container.innerHTML = runs.map(r => {
       let statusBadge = "";
       if (r.status === "completed" && r.conclusion === "success") {
-        statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Success</span>`;
+        statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Success</span>`;
       } else if (r.status === "in_progress" || r.status === "queued") {
-        statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20"><span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> In Progress</span>`;
+        statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200"><span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> In Progress</span>`;
       } else {
-        statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> ${r.conclusion || r.status}</span>`;
+        statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200"><i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> ${r.conclusion || r.status}</span>`;
       }
 
       const runDate = new Date(r.created_at).toLocaleString();
 
       return `
-        <div class="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors">
+        <div class="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-slate-50 transition-colors">
           <div class="space-y-1">
             <div class="flex items-center gap-2">
-              <span class="text-sm font-bold text-white">${r.name || 'Motivational Repurposer'}</span>
+              <span class="text-sm font-bold text-slate-900">${r.name || 'Motivational Repurposer'}</span>
               ${statusBadge}
             </div>
-            <p class="text-xs text-gray-400 font-mono">
+            <p class="text-xs text-slate-500 font-mono">
               Run #${r.run_number} • Triggered ${runDate}
             </p>
           </div>
           <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <a href="${r.html_url}" target="_blank" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-gray-300 transition-colors inline-flex items-center gap-1.5 border border-white/10">
+            <a href="${r.html_url}" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition-colors inline-flex items-center gap-1.5 border border-slate-300">
               <span>View Logs</span>
               <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
             </a>
@@ -844,11 +844,11 @@ function renderQueue(items) {
   container.innerHTML = items.map((item, idx) => {
     let statusPill = "";
     if (item.status === "completed") {
-      statusPill = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"><i data-lucide="check" class="w-3 h-3"></i> PUBLISHED</span>`;
+      statusPill = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300"><i data-lucide="check" class="w-3 h-3"></i> PUBLISHED</span>`;
     } else if (item.status === "processing") {
-      statusPill = `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30"><span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span> PROCESSING</span>`;
+      statusPill = `<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-300"><span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span> PROCESSING</span>`;
     } else {
-      statusPill = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30"><i data-lucide="clock" class="w-3 h-3"></i> QUEUED</span>`;
+      statusPill = `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300"><i data-lucide="clock" class="w-3 h-3"></i> QUEUED</span>`;
     }
 
     const thumb = item.thumbnail || `https://i.ytimg.com/vi/${item.id}/hqdefault.jpg`;
@@ -857,22 +857,22 @@ function renderQueue(items) {
     const pubUrl = item.published_video_url || "";
 
     return `
-      <div class="p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-white/[0.03] transition-colors group">
+      <div class="p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-slate-50 transition-colors group">
         <div class="flex items-center gap-3 min-w-0 flex-1">
-          <div class="relative w-24 h-14 sm:w-28 sm:h-16 rounded-lg overflow-hidden bg-black/40 border border-white/10 shrink-0">
-            <img src="${thumb}" alt="${escapeHtml(title)}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/120x68/1a1a1a/666666?text=Video'">
-            ${dur ? `<span class="absolute bottom-1 right-1 px-1 py-0.2 rounded bg-black/80 font-mono text-[9px] text-gray-200 font-semibold">${dur}</span>` : ""}
+          <div class="relative w-24 h-14 sm:w-28 sm:h-16 rounded-lg overflow-hidden bg-slate-100 border border-slate-200 shrink-0 shadow-sm">
+            <img src="${thumb}" alt="${escapeHtml(title)}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/120x68/f1f5f9/64748b?text=Video'">
+            ${dur ? `<span class="absolute bottom-1 right-1 px-1 py-0.2 rounded bg-slate-900/80 font-mono text-[9px] text-white font-semibold">${dur}</span>` : ""}
           </div>
           <div class="min-w-0 flex-1 space-y-1">
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-xs text-gray-500 font-mono">#${idx + 1}</span>
+              <span class="text-xs text-slate-400 font-mono font-medium">#${idx + 1}</span>
               ${statusPill}
-              ${pubUrl ? `<a href="${pubUrl}" target="_blank" class="text-[11px] text-emerald-400 hover:underline flex items-center gap-0.5 font-semibold"><i data-lucide="external-link" class="w-3 h-3"></i> Watch Video</a>` : ""}
+              ${pubUrl ? `<a href="${pubUrl}" target="_blank" class="text-[11px] text-emerald-700 hover:underline flex items-center gap-0.5 font-bold"><i data-lucide="external-link" class="w-3 h-3"></i> Watch Video</a>` : ""}
             </div>
-            <a href="${item.url}" target="_blank" class="block text-xs sm:text-sm font-semibold text-white hover:text-amber-400 truncate transition-colors" title="${escapeHtml(title)}">
+            <a href="${item.url}" target="_blank" class="block text-xs sm:text-sm font-bold text-slate-900 hover:text-amber-600 truncate transition-colors" title="${escapeHtml(title)}">
               ${escapeHtml(title)}
             </a>
-            <p class="text-[10px] text-gray-500 font-mono truncate">
+            <p class="text-[10px] text-slate-500 font-mono truncate">
               ID: ${item.id} • Added: ${new Date(item.added_at || Date.now()).toLocaleDateString()}
             </p>
           </div>
@@ -883,16 +883,16 @@ function renderQueue(items) {
             <button 
               type="button" 
               onclick="launchQueueItem('${item.id}', '${escapeHtml(item.url)}')"
-              class="px-3 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              class="px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
               title="Launch this video right now"
             >
-              <i data-lucide="play" class="w-3 h-3 fill-amber-300"></i>
+              <i data-lucide="play" class="w-3 h-3 fill-amber-700 text-amber-700"></i>
               <span>Launch</span>
             </button>
             <button 
               type="button" 
               onclick="markQueueItemDone('${item.id}')"
-              class="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-emerald-400 border border-white/10 transition-colors"
+              class="p-1.5 rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 border border-slate-300 transition-colors"
               title="Mark as completed"
             >
               <i data-lucide="check" class="w-3.5 h-3.5"></i>
@@ -901,7 +901,7 @@ function renderQueue(items) {
           <button 
             type="button" 
             onclick="removeQueueItem('${item.id}')"
-            class="p-1.5 rounded-lg bg-white/5 hover:bg-rose-500/20 text-gray-500 hover:text-rose-400 border border-white/10 transition-colors"
+            class="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-700 border border-slate-300 transition-colors"
             title="Remove from queue"
           >
             <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
