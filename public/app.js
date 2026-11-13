@@ -1439,6 +1439,79 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Hostinger Cloud Engine Controls
+  const inputHostinger = document.getElementById("input-hostinger-url");
+  const btnHostingerFetch = document.getElementById("btn-hostinger-fetch");
+  const hostingerStatusPill = document.getElementById("hostinger-status-pill");
+
+  if (inputHostinger) {
+    const savedHostinger = localStorage.getItem("fleet_hostinger_downloader_url") || "";
+    inputHostinger.value = savedHostinger;
+    inputHostinger.addEventListener("change", () => {
+      localStorage.setItem("fleet_hostinger_downloader_url", inputHostinger.value.trim());
+    });
+  }
+
+  if (btnHostingerFetch) {
+    btnHostingerFetch.addEventListener("click", async () => {
+      const urlInput = document.getElementById("input-url");
+      const url = urlInput ? urlInput.value.trim() : "";
+      if (!url) {
+        alert("Please paste a YouTube URL into the Reference URL box first!");
+        return;
+      }
+      const hostingerUrl = inputHostinger ? inputHostinger.value.trim() : "";
+      if (!hostingerUrl) {
+        alert("Please enter your Hostinger Downloader URL (e.g. https://yourdomain.com/downloader.php)!");
+        inputHostinger && inputHostinger.focus();
+        return;
+      }
+      localStorage.setItem("fleet_hostinger_downloader_url", hostingerUrl);
+
+      btnHostingerFetch.disabled = true;
+      btnHostingerFetch.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Hostinger processing...`;
+      refreshIcons();
+
+      try {
+        const ghToken = getGithubToken();
+        const res = await fetch(hostingerUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "download_and_cache",
+            url: url,
+            channel: activeChannel ? activeChannel.id : "",
+            repo: activeChannel ? activeChannel.repo : "",
+            gh_token: ghToken
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || `Hostinger error (${res.status})`);
+        }
+
+        modalGrab.classList.add("hidden");
+        modalGrab.classList.remove("flex");
+
+        const audioLabel = document.getElementById("audio-file-label");
+        const audioSub = document.getElementById("audio-file-sub");
+        const clearBtn = document.getElementById("btn-clear-audio");
+        if (audioLabel) audioLabel.textContent = `✅ Cached by Hostinger (${data.audio_size || 'OK'})`;
+        if (audioSub) audioSub.textContent = `Directly committed to ${data.repo || 'channel repo'}`;
+        if (clearBtn) clearBtn.classList.remove("hidden");
+
+        alert(`🚀 Success! Hostinger downloaded the audio (${data.audio_size}) and committed it directly to ${data.repo}!\n\nYou can now click 'Launch Cloud Production' and Azure will render the video with zero bot blocks.`);
+      } catch (err) {
+        alert(`Hostinger Downloader error: ${err.message}`);
+      } finally {
+        btnHostingerFetch.disabled = false;
+        btnHostingerFetch.innerHTML = `<i data-lucide="cloud-lightning" class="w-4 h-4"></i><span>Grab on Hostinger</span>`;
+        refreshIcons();
+      }
+    });
+  }
+
   // Settings Modal Controls
   const btnSettings = document.getElementById("btn-settings");
   const btnCloseSettings = document.getElementById("btn-close-settings");

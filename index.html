@@ -539,7 +539,37 @@
           </button>
         </div>
 
-        <!-- Mode B: 1-Click Fast Web Extractors -->
+        <!-- Mode B: Hostinger Cloud Engine (Invisible 2-Way) -->
+        <div class="p-4 rounded-2xl bg-dark-900/90 border border-white/10 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+              <i data-lucide="server" class="w-4 h-4"></i>
+              Hostinger Cloud Engine (Invisible 2-Way)
+            </span>
+            <span id="hostinger-status-pill" class="text-[10px] font-bold px-2 py-0.5 rounded bg-white/10 text-gray-400">Ready</span>
+          </div>
+          <p class="text-xs text-gray-400 leading-relaxed">
+            Downloads audio on your Hostinger server and commits it directly to GitHub in chunks, bypassing Vercel size caps and YouTube cloud bot blocks.
+          </p>
+          <div class="flex gap-2">
+            <input 
+              type="text" 
+              id="input-hostinger-url" 
+              placeholder="https://yourdomain.com/downloader.php"
+              class="flex-1 bg-black/50 border border-white/15 rounded-xl px-3 py-2 text-xs text-white font-mono placeholder-gray-600 focus:outline-none focus:border-amber-400"
+            >
+            <button 
+              type="button" 
+              id="btn-hostinger-fetch"
+              class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition-all flex items-center gap-1.5 shrink-0"
+            >
+              <i data-lucide="cloud-lightning" class="w-4 h-4"></i>
+              <span>Grab on Hostinger</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mode C: 1-Click Fast Web Extractors -->
         <div class="p-4 rounded-2xl bg-dark-900/90 border border-white/10 space-y-2">
           <span class="text-xs font-bold text-gray-300 flex items-center gap-1.5">
             <i data-lucide="globe" class="w-4 h-4 text-blue-400"></i>
