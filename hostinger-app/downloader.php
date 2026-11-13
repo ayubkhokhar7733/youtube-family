@@ -43,6 +43,13 @@ function extract_yt_id($url) {
     return null;
 }
 
+function get_ytdlp_command() {
+    if (file_exists(__DIR__ . '/bin/yt-dlp')) {
+        return 'python3 ' . escapeshellarg(__DIR__ . '/bin/yt-dlp');
+    }
+    return 'yt-dlp';
+}
+
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 // Check server capabilities (yt-dlp, python, exec)
@@ -85,7 +92,8 @@ if ($action === 'stream_mp3') {
     @mkdir($temp_dir, 0777, true);
     $out_pattern = $temp_dir . '/%(id)s.%(ext)s';
 
-    $cmd = "yt-dlp -x --audio-format mp3 --extractor-args 'youtube:player_client=android,web' -o " . escapeshellarg($out_pattern) . " " . escapeshellarg($url);
+    $ytdlp_bin = get_ytdlp_command();
+    $cmd = "$ytdlp_bin -x --audio-format mp3 --extractor-args 'youtube:player_client=android,web' -o " . escapeshellarg($out_pattern) . " " . escapeshellarg($url);
     @exec($cmd . " 2>&1", $cmd_out, $ret);
 
     $files = glob($temp_dir . '/*.mp3');
@@ -135,10 +143,7 @@ if ($action === 'download_and_cache' || $_SERVER['REQUEST_METHOD'] === 'POST') {
     $out_pattern = $temp_dir . '/%(id)s.%(ext)s';
 
     // Check yt-dlp binary (system or local bin)
-    $ytdlp_bin = 'yt-dlp';
-    if (file_exists(__DIR__ . '/bin/yt-dlp')) {
-        $ytdlp_bin = __DIR__ . '/bin/yt-dlp';
-    }
+    $ytdlp_bin = get_ytdlp_command();
 
     $cmd = "$ytdlp_bin -x --audio-format mp3 --extractor-args 'youtube:player_client=android,web' -o " . escapeshellarg($out_pattern) . " " . escapeshellarg($url);
     @exec($cmd . " 2>&1", $cmd_out, $ret);
