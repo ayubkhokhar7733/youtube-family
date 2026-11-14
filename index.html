@@ -225,7 +225,7 @@
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
               <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                <span>Upload MP3 Audio <span class="text-emerald-600 font-semibold normal-case">(Bypasses YT Bot Block)</span></span>
+                <span>Upload Audio File <span class="text-emerald-600 font-semibold normal-case">(MP3 / MPEG / M4A)</span></span>
               </label>
               <div class="flex items-center gap-2">
                 <button type="button" id="btn-quick-grab-audio" class="hidden text-xs text-amber-600 hover:text-amber-700 font-semibold items-center gap-1 transition-colors">
@@ -240,14 +240,14 @@
                 <i data-lucide="music" class="w-5 h-5 text-amber-700"></i>
               </div>
               <div class="min-w-0 flex-1">
-                <p id="audio-file-label" class="text-xs font-bold text-slate-800 truncate">Choose or drop .mp3 / .m4a file</p>
-                <p id="audio-file-sub" class="text-[11px] text-slate-500 truncate">Drop your downloaded audio here</p>
+                <p id="audio-file-label" class="text-xs font-bold text-slate-800 truncate">Choose or drop .mp3 / .mpeg / .m4a file</p>
+                <p id="audio-file-sub" class="text-[11px] text-slate-500 truncate">Drop your downloaded audio file here</p>
               </div>
-              <input type="file" id="input-audio-file" accept=".mp3,.m4a,.wav,.webm,.opus,audio/*" class="hidden">
+              <input type="file" id="input-audio-file" accept=".mp3,.mpeg,.mpg,.m4a,.wav,.webm,.opus,audio/*,video/mpeg" class="hidden">
             </label>
             <!-- Direct fast converter helper links -->
             <div class="flex items-center justify-between text-[11px] text-slate-500 px-1 pt-0.5">
-              <span>Need to download MP3 first?</span>
+              <span>Need to download audio first?</span>
               <div class="flex items-center gap-2">
                 <a href="https://cobalt.tools" target="_blank" class="text-amber-600 hover:text-amber-700 font-semibold inline-flex items-center gap-0.5">
                   <span>Cobalt Web</span>

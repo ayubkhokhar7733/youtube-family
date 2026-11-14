@@ -586,7 +586,7 @@ async function cleanupStaleAudioFiles(owner, repo, vid, token) {
 async function uploadMediaAssets(owner, repo, vid, token, onStatus) {
   if (selectedAudioFile) {
     const rawExt = (selectedAudioFile.name.split(".").pop() || "mp3").toLowerCase();
-    const ext = ["mp3", "m4a", "wav", "webm", "opus"].includes(rawExt) ? rawExt : "mp3";
+    const ext = ["mp3", "mpeg", "mpg", "m4a", "wav", "webm", "opus"].includes(rawExt) ? rawExt : "mp3";
 
     onStatus(`Preparing ${selectedAudioFile.name} for upload...`);
     await cleanupStaleAudioFiles(owner, repo, vid, token);
@@ -1441,7 +1441,7 @@ document.addEventListener("DOMContentLoaded", () => {
       audioSub.textContent = `${(file.size / 1048576).toFixed(2)} MB • Ready to upload to ${activeChannel?.repo || "repo"}`;
       btnClearAudio.classList.remove("hidden");
     } else {
-      audioLabel.textContent = "Choose or drop .mp3 / .m4a file";
+      audioLabel.textContent = "Choose or drop .mp3 / .mpeg / .m4a file";
       audioSub.textContent = "Optional — uploaded straight to your channel repo";
       btnClearAudio.classList.add("hidden");
       if (inputAudio) inputAudio.value = "";
