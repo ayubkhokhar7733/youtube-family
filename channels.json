@@ -95,6 +95,22 @@
       "is_public_repo": true,
       "color": "amber",
       "badge": "FAMILY"
+    },
+    {
+      "id": "mente_libre",
+      "name": "Mente Libre",
+      "owner": "Jam Irshad",
+      "handle": "@mentelibre2027",
+      "speaker": "Dra. Marian Rojas Estapé",
+      "language": "es",
+      "niche": "Psicología & Crecimiento Personal",
+      "schedule_hours": 72,
+      "prime_time_utc": 16,
+      "repo": "ayubkhokhar7733/channel-mente-libre",
+      "workflow": "repurpose.yml",
+      "is_public_repo": true,
+      "color": "amber",
+      "badge": "FAMILY"
     }
   ]
 }

@@ -43,6 +43,14 @@ export const USERS = {
     magicKey: "nephew-mente-enfoque-6214",
     isAdmin: false,
     channels: ["nephew_neuro"]
+  },
+  irshad: {
+    id: "irshad",
+    name: "Jam Irshad",
+    password: "libre2026",
+    magicKey: "irshad-mente-libre-5192",
+    isAdmin: false,
+    channels: ["mente_libre"]
   }
 };
 

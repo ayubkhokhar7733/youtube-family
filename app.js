@@ -89,6 +89,21 @@ const DEFAULT_CHANNELS = [
     is_public_repo: true,
     color: "amber",
     badge: "FAMILY"
+  },
+  {
+    id: "mente_libre",
+    name: "Mente Libre",
+    owner: "Jam Irshad",
+    handle: "@mentelibre2027",
+    speaker: "Dra. Marian Rojas Estapé",
+    language: "es",
+    niche: "Psicología & Crecimiento Personal",
+    schedule_hours: 72,
+    repo: "ayubkhokhar7733/channel-mente-libre",
+    workflow: "repurpose.yml",
+    is_public_repo: true,
+    color: "amber",
+    badge: "FAMILY"
   }
 ];
 
@@ -142,6 +157,14 @@ const DEFAULT_CLIENT_USERS = {
     magicKey: "nephew-mente-enfoque-6214",
     isAdmin: false,
     channels: ["nephew_neuro"]
+  },
+  irshad: {
+    id: "irshad",
+    name: "Jam Irshad",
+    password: "libre2026",
+    magicKey: "irshad-mente-libre-5192",
+    isAdmin: false,
+    channels: ["mente_libre"]
   }
 };
 
