@@ -725,7 +725,7 @@ async function loadRecentRuns() {
 
     const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/runs?per_page=5`, { headers });
     if (!res.ok) {
-      container.innerHTML = `<div class="p-6 text-center text-xs text-gray-500">Could not fetch runs for <span class="font-mono">${activeChannel.repo}</span>. Configure GitHub Token in Settings if repo is private.</div>`;
+      container.innerHTML = `<div class="p-6 text-center text-xs text-gray-500">Could not fetch cloud runs for ${activeChannel.name}. Please check settings if authentication is required.</div>`;
       return;
     }
 
@@ -761,10 +761,12 @@ async function loadRecentRuns() {
             </p>
           </div>
           <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+            ${currentUser && currentUser.isAdmin ? `
             <a href="${r.html_url}" target="_blank" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition-colors inline-flex items-center gap-1.5 border border-slate-300">
               <span>View Logs</span>
               <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-            </a>
+            </a>` : `
+            <span class="text-xs text-slate-500 font-semibold px-2 py-1 rounded bg-slate-100 border border-slate-200">Processing Cloud Job</span>`}
           </div>
         </div>
       `;
@@ -1867,8 +1869,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         statusTitle.innerHTML = `✅ Cloud Pipeline Triggered Successfully!`;
         statusMsg.textContent = `Cloud runner active for ${activeChannel.name}. Rendering 1080p video, burning subtitles, and scheduling upload (+${scheduleHours}h gap).`;
-        statusLink.href = `https://github.com/${result.owner}/${result.repo}/actions`;
-        statusLink.classList.remove("hidden");
+        if (currentUser && currentUser.isAdmin) {
+          statusLink.href = `https://github.com/${result.owner}/${result.repo}/actions`;
+          statusLink.classList.remove("hidden");
+        } else {
+          statusLink.classList.add("hidden");
+        }
 
         // Reset inputs for next run
         document.getElementById("input-url").value = "";
