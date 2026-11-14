@@ -111,6 +111,7 @@ let channels = [];
 let activeChannel = null;
 let selectedAudioFile = null;
 let selectedThumbFile = null;
+let selectedSpeakerFile = null;
 let isOwnerLocked = false;
 let currentUser = null;
 let authToken = null;
@@ -634,6 +635,20 @@ async function uploadMediaAssets(owner, repo, vid, token, onStatus) {
       `assets/thumbnails/${vid}_thumb.jpg`,
       thumbB64,
       `Dashboard upload thumbnail ${vid}`,
+      token
+    );
+  }
+
+  if (selectedSpeakerFile) {
+    onStatus(`Uploading speaker cutout avatar for ${vid}...`);
+    const buf = await selectedSpeakerFile.arrayBuffer();
+    const speakerB64 = arrayBufferToBase64(buf);
+    await githubUpsertFile(
+      owner,
+      repo,
+      `assets/speaker_cutout.png`,
+      speakerB64,
+      `Dashboard upload speaker cutout ${vid}`,
       token
     );
   }
@@ -1492,6 +1507,39 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Speaker Cutout Avatar Upload Handler
+  const inputSpeaker = document.getElementById("input-speaker-file");
+  const dropSpeaker = document.getElementById("drop-speaker");
+  const speakerLabel = document.getElementById("speaker-file-label");
+  const speakerSub = document.getElementById("speaker-file-sub");
+  const btnClearSpeaker = document.getElementById("btn-clear-speaker");
+
+  function setSpeakerFile(file) {
+    selectedSpeakerFile = file || null;
+    if (file) {
+      if (speakerLabel) speakerLabel.textContent = file.name;
+      if (speakerSub) speakerSub.textContent = `${(file.size / 1024).toFixed(0)} KB • Overlaid on bottom-left corner of video`;
+      if (btnClearSpeaker) btnClearSpeaker.classList.remove("hidden");
+    } else {
+      if (speakerLabel) speakerLabel.textContent = "Choose or drop speaker cutout (.png)";
+      if (speakerSub) speakerSub.textContent = "Overlayed on bottom-left corner of video";
+      if (btnClearSpeaker) btnClearSpeaker.classList.add("hidden");
+      if (inputSpeaker) inputSpeaker.value = "";
+    }
+  }
+
+  if (inputSpeaker) inputSpeaker.addEventListener("change", (e) => setSpeakerFile(e.target.files[0]));
+  if (btnClearSpeaker) btnClearSpeaker.addEventListener("click", () => setSpeakerFile(null));
+  if (dropSpeaker) {
+    dropSpeaker.addEventListener("dragover", (e) => { e.preventDefault(); dropSpeaker.classList.add("border-amber-400"); });
+    dropSpeaker.addEventListener("dragleave", () => dropSpeaker.classList.remove("border-amber-400"));
+    dropSpeaker.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropSpeaker.classList.remove("border-amber-400");
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) setSpeakerFile(e.dataTransfer.files[0]);
+    });
+  }
+
   // Refresh Runs Button
   const btnRefresh = document.getElementById("btn-refresh-runs");
   if (btnRefresh) {
@@ -1885,6 +1933,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateVidHint();
         setAudioFile(null);
         setThumbFile(null);
+        setSpeakerFile(null);
 
         setTimeout(() => loadRecentRuns(), 4000);
       } catch (err) {

@@ -281,6 +281,24 @@
               <span>Default: winning custom thumbnail generated automatically</span>
             </div>
           </div>
+
+          <!-- Speaker Cutout Overlay Dropzone -->
+          <div class="space-y-1.5 md:col-span-2">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center justify-between">
+              <span>Speaker Cutout Avatar <span class="text-slate-500 font-normal normal-case">(Optional transparent .png placed in bottom-left corner)</span></span>
+              <button type="button" id="btn-clear-speaker" class="hidden text-[11px] text-rose-600 hover:underline font-normal">Remove</button>
+            </label>
+            <label id="drop-speaker" class="flex items-center gap-3 w-full bg-slate-50 hover:bg-slate-100 border-2 border-dashed border-slate-300 hover:border-slate-400 rounded-xl px-4 py-3 cursor-pointer transition-all">
+              <div class="w-10 h-10 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
+                <i data-lucide="user" class="w-5 h-5 text-amber-700"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p id="speaker-file-label" class="text-xs font-bold text-slate-800 truncate">Choose or drop speaker cutout (.png)</p>
+                <p id="speaker-file-sub" class="text-[11px] text-slate-500 truncate">Overlayed on bottom-left corner of video</p>
+              </div>
+              <input type="file" id="input-speaker-file" accept="image/png,image/webp,image/jpeg" class="hidden">
+            </label>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
