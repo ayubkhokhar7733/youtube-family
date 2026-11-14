@@ -102,7 +102,7 @@ let authToken = null;
 const UPLOAD_CHUNK_SIZE = 10 * 1024 * 1024; // 10 MB raw per GitHub Contents API PUT
 
 // Client-side Users & Channel Permissions Directory
-const CLIENT_USERS = {
+const DEFAULT_CLIENT_USERS = {
   admin: {
     id: "admin",
     name: "Ayub (Fleet Admin)",
@@ -145,9 +145,27 @@ const CLIENT_USERS = {
   }
 };
 
+function getClientUsers() {
+  try {
+    const custom = localStorage.getItem("fleet_custom_users");
+    if (custom) {
+      const parsed = JSON.parse(custom);
+      return { ...DEFAULT_CLIENT_USERS, ...parsed };
+    }
+  } catch (e) {}
+  return { ...DEFAULT_CLIENT_USERS };
+}
+
+function saveClientUsers(usersMap) {
+  try {
+    localStorage.setItem("fleet_custom_users", JSON.stringify(usersMap));
+  } catch (e) {}
+}
+
 function authenticateClientUser(username, password) {
   if (!username || !password) return null;
-  const u = CLIENT_USERS[username.toLowerCase().trim()];
+  const users = getClientUsers();
+  const u = users[username.toLowerCase().trim()];
   if (u && u.password === password.trim()) return u;
   return null;
 }
@@ -155,8 +173,9 @@ function authenticateClientUser(username, password) {
 function authenticateClientMagicKey(key) {
   if (!key) return null;
   const trimmed = key.trim();
-  for (const uid in CLIENT_USERS) {
-    if (CLIENT_USERS[uid].magicKey === trimmed) return CLIENT_USERS[uid];
+  const users = getClientUsers();
+  for (const uid in users) {
+    if (users[uid].magicKey === trimmed) return users[uid];
   }
   return null;
 }
@@ -722,7 +741,80 @@ async function loadRecentRuns() {
 }
 
 // Settings Modal Controls (global so triggerWorkflow / submit can open it)
-function openSettingsModal() {
+function renderProfileSettingsList() {
+  const container = document.getElementById("user-profiles-list");
+  if (!container) return;
+
+  const users = getClientUsers();
+  const allChannels = (channels && channels.length > 0) ? channels : DEFAULT_CHANNELS;
+
+  container.innerHTML = Object.keys(users).map(userId => {
+    const u = users[userId];
+    const isAll = u.isAdmin || (u.channels && u.channels.includes("*"));
+    const isCurrentUser = currentUser && (currentUser.id === u.id);
+
+    return `
+      <div class="studio-card rounded-2xl p-4 border border-slate-200 bg-white space-y-3" data-profile-id="${escapeHtml(u.id)}">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center font-bold text-amber-700 text-xs">
+              ${escapeHtml(u.name.charAt(0))}
+            </span>
+            <div>
+              <span class="text-xs font-bold text-slate-900">${escapeHtml(u.name)}</span>
+              ${u.isAdmin ? '<span class="ml-1.5 text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300">ADMIN</span>' : ''}
+              ${isCurrentUser ? '<span class="ml-1.5 text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">YOU</span>' : ''}
+            </div>
+          </div>
+          <span class="text-[11px] font-mono text-slate-400">@${escapeHtml(u.id)}</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Display Name</label>
+            <input 
+              type="text" 
+              class="profile-edit-name w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white"
+              value="${escapeHtml(u.name)}"
+            >
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Username / Login ID</label>
+            <input 
+              type="text" 
+              class="profile-edit-username w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono focus:outline-none focus:border-amber-500 focus:bg-white"
+              value="${escapeHtml(u.id)}"
+              ${u.id === 'admin' ? 'disabled title="Master admin ID cannot be renamed"' : ''}
+            >
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">PIN / Password</label>
+            <div class="relative">
+              <input 
+                type="text" 
+                class="profile-edit-password w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono font-bold focus:outline-none focus:border-amber-500 focus:bg-white"
+                value="${escapeHtml(u.password)}"
+              >
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Channel Access</label>
+            <div class="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+              ${isAll ? '<span class="font-bold text-amber-700">★ All Fleet Channels (Master Access)</span>' : (u.channels || []).join(", ") || "None"}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  refreshIcons();
+}
+
+function openSettingsModal(defaultTab = 'tokens') {
   const modalSettings = document.getElementById("modal-settings");
   const inputPat = document.getElementById("input-pat");
   const channelLabel = document.getElementById("settings-channel-label");
@@ -734,8 +826,34 @@ function openSettingsModal() {
     if (repoLabel) repoLabel.textContent = activeChannel.repo;
   }
   if (inputPat) inputPat.value = getGithubToken();
+
+  switchSettingsTab(defaultTab);
+  renderProfileSettingsList();
+
   modalSettings.classList.remove("hidden");
   modalSettings.classList.add("flex");
+}
+
+function switchSettingsTab(tabName) {
+  const tabTokens = document.getElementById("tab-content-tokens");
+  const tabProfiles = document.getElementById("tab-content-profiles");
+  const btnTokens = document.getElementById("tab-btn-tokens");
+  const btnProfiles = document.getElementById("tab-btn-profiles");
+
+  if (!tabTokens || !tabProfiles || !btnTokens || !btnProfiles) return;
+
+  if (tabName === "profiles") {
+    tabTokens.classList.add("hidden");
+    tabProfiles.classList.remove("hidden");
+    btnProfiles.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-amber-500 text-slate-950 shadow-sm flex items-center gap-1.5";
+    btnTokens.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1.5";
+  } else {
+    tabProfiles.classList.add("hidden");
+    tabTokens.classList.remove("hidden");
+    btnTokens.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-amber-500 text-slate-950 shadow-sm flex items-center gap-1.5";
+    btnProfiles.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1.5";
+  }
+  refreshIcons();
 }
 
 function closeSettingsModal() {
@@ -1517,8 +1635,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnCloseSettings = document.getElementById("btn-close-settings");
   const btnSaveSettings = document.getElementById("btn-save-settings");
   const inputPat = document.getElementById("input-pat");
+  const tabBtnTokens = document.getElementById("tab-btn-tokens");
+  const tabBtnProfiles = document.getElementById("tab-btn-profiles");
+  const btnSaveProfiles = document.getElementById("btn-save-profiles");
+  const btnResetProfiles = document.getElementById("btn-reset-profiles");
 
-  if (btnSettings) btnSettings.addEventListener("click", openSettingsModal);
+  if (tabBtnTokens) tabBtnTokens.addEventListener("click", () => switchSettingsTab("tokens"));
+  if (tabBtnProfiles) tabBtnProfiles.addEventListener("click", () => switchSettingsTab("profiles"));
+
+  if (btnSettings) btnSettings.addEventListener("click", () => openSettingsModal('tokens'));
   if (btnCloseSettings) btnCloseSettings.addEventListener("click", closeSettingsModal);
   if (btnSaveSettings) {
     btnSaveSettings.addEventListener("click", () => {
@@ -1527,6 +1652,71 @@ document.addEventListener("DOMContentLoaded", () => {
       closeSettingsModal();
       loadRecentRuns();
       alert(`Token saved for ${activeChannel ? activeChannel.name : "studio"}!`);
+    });
+  }
+
+  // Save Profiles & Passwords handler
+  if (btnSaveProfiles) {
+    btnSaveProfiles.addEventListener("click", () => {
+      const userCards = document.querySelectorAll("#user-profiles-list [data-profile-id]");
+      if (!userCards || userCards.length === 0) return;
+
+      const currentUsersMap = getClientUsers();
+      const updatedMap = { ...currentUsersMap };
+
+      userCards.forEach(card => {
+        const origId = card.getAttribute("data-profile-id");
+        const nameInput = card.querySelector(".profile-edit-name");
+        const userInput = card.querySelector(".profile-edit-username");
+        const passInput = card.querySelector(".profile-edit-password");
+
+        if (origId && currentUsersMap[origId]) {
+          const newName = nameInput ? nameInput.value.trim() : currentUsersMap[origId].name;
+          const newPass = passInput ? passInput.value.trim() : currentUsersMap[origId].password;
+          let newId = userInput ? userInput.value.trim().toLowerCase() : origId;
+
+          if (!newId) newId = origId;
+          if (!newName) return;
+          if (!newPass) return;
+
+          const existingData = { ...currentUsersMap[origId] };
+          existingData.name = newName;
+          existingData.password = newPass;
+
+          if (newId !== origId) {
+            existingData.id = newId;
+            delete updatedMap[origId];
+            updatedMap[newId] = existingData;
+          } else {
+            updatedMap[origId] = existingData;
+          }
+
+          // If current logged in user changed their own info, update current session
+          if (currentUser && (currentUser.id === origId || currentUser.id === newId)) {
+            currentUser.id = newId;
+            currentUser.name = newName;
+            currentUser.password = newPass;
+            localStorage.setItem("fleet_session_user", JSON.stringify(currentUser));
+            const profileName = document.getElementById("user-profile-name");
+            if (profileName) profileName.textContent = newName;
+          }
+        }
+      });
+
+      saveClientUsers(updatedMap);
+      renderProfileSettingsList();
+      alert("✅ User profile credentials and passwords updated successfully!");
+    });
+  }
+
+  // Reset Profiles to Default
+  if (btnResetProfiles) {
+    btnResetProfiles.addEventListener("click", () => {
+      if (confirm("Reset all profiles, usernames, and passwords back to factory defaults?")) {
+        localStorage.removeItem("fleet_custom_users");
+        renderProfileSettingsList();
+        alert("Profiles reset to default credentials.");
+      }
     });
   }
 
