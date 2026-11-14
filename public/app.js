@@ -389,7 +389,14 @@ function applyOwnerLockUI() {
     if (ownerPill) ownerPill.classList.remove("hidden");
   } else {
     if (selectorSection) selectorSection.classList.remove("hidden");
-    if (copyLinkBtn) copyLinkBtn.classList.remove("hidden");
+    // Only show Copy Owner Link if user is Admin
+    if (copyLinkBtn) {
+      if (currentUser && currentUser.isAdmin) {
+        copyLinkBtn.classList.remove("hidden");
+      } else {
+        copyLinkBtn.classList.add("hidden");
+      }
+    }
     if (ownerPill) ownerPill.classList.add("hidden");
   }
 }
@@ -464,8 +471,10 @@ function renderActiveChannel() {
     Speaker: <span class="text-slate-900 font-bold">${activeChannel.speaker}</span> • 
     Schedule: <span class="text-emerald-700 font-bold">Every ${activeChannel.schedule_hours / 24} Days (${activeChannel.schedule_hours}h gap)</span>
   `;
-  document.getElementById("active-channel-repo").textContent = activeChannel.repo;
-  document.getElementById("active-repo-badge").textContent = activeChannel.is_public_repo ? "Public (Unlimited)" : "Private Repo";
+  const repoElem = document.getElementById("active-channel-repo");
+  if (repoElem) repoElem.textContent = activeChannel.repo;
+  const repoBadgeElem = document.getElementById("active-repo-badge");
+  if (repoBadgeElem) repoBadgeElem.textContent = activeChannel.is_public_repo ? "Public (Unlimited)" : "Private Repo";
 
   // Pre-fill form inputs
   const speakerInput = document.getElementById("input-speaker");
