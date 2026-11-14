@@ -496,6 +496,10 @@ function renderActiveChannel() {
 }
 
 // Per-channel GitHub Token Helper (isolated per channel with master fallback)
+function getSessionToken() {
+  return authToken || localStorage.getItem("fleet_auth_token") || "";
+}
+
 function getGithubToken(channelId) {
   const id = channelId || (activeChannel && activeChannel.id);
   if (id) {
