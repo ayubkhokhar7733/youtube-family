@@ -355,8 +355,12 @@ async function initChannels() {
   }
 
   // Filter channels strictly for this user!
-  if (!user.isAdmin && !(user.channels && user.channels.includes("*"))) {
-    channels = channels.filter(c => user.channels && user.channels.includes(c.id));
+  const customUsers = getClientUsers();
+  const matchedUser = customUsers[user.id] || user;
+  const userAllowedChannels = matchedUser.channels || user.channels || [];
+
+  if (!user.isAdmin && !(userAllowedChannels.includes("*"))) {
+    channels = channels.filter(c => userAllowedChannels.includes(c.id));
   }
 
   activeChannel = channels[0] || null;
