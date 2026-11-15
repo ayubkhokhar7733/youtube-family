@@ -7,7 +7,7 @@ export const USERS = {
   admin: {
     id: "admin",
     name: "Ayub (Fleet Admin)",
-    password: "admin7733",
+    password: "Ayub@42004200",
     magicKey: "master-admin-fleet-key-7733",
     isAdmin: true,
     channels: ["*"]

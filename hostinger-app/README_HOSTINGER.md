@@ -31,7 +31,7 @@ This package provides a secure, standalone multi-channel dashboard ready to run 
 
 | User | Channel | Login Username / Passcode | 1-Click Magic Link (Auto-Signs In) |
 | :--- | :--- | :--- | :--- |
-| **Ayub (Fleet Admin)** | **All 6 Channels** | `admin` / `admin7733` | `https://yourdomain.com/?key=master-admin-fleet-key-7733` |
+| **Ayub (Fleet Admin)** | **All 7 Channels** | `admin` / `Ayub@42004200` | `https://yourdomain.com/?key=master-admin-fleet-key-7733` |
 | **Shafqat Chadiyo** | **El Arte de la Psique 2.0** | `shafqat` / `arte2026` | `https://yourdomain.com/?key=shafqat-arte-psique-9281` |
 | **Zahid Khurshid** | **Mejora Día a Día** | `zahid` / `mejora2026` | `https://yourdomain.com/?key=zahid-mejora-dia-4819` |
 | **Brother** | **Hábitos de Acero** & **Stoic** | `brother` / `acero2026` | `https://yourdomain.com/?key=brother-habitos-stoic-1934` |
