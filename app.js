@@ -521,6 +521,35 @@ function setGithubToken(channelId, tokenValue) {
 }
 
 async function githubUpsertFile(owner, repo, filePath, base64Content, commitMsg, token) {
+  // 1. Try serverless /api/upload first (uses backend GITHUB_TOKEN so users are never asked for a token)
+  try {
+    const sessionToken = getSessionToken();
+    const upRes = await fetch("/api/upload", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${sessionToken}`
+      },
+      body: JSON.stringify({
+        repo: `${owner}/${repo}`,
+        path: filePath,
+        content: base64Content,
+        message: commitMsg,
+        gh_token: token || getGithubToken()
+      })
+    });
+    if (upRes.ok) {
+      return await upRes.json();
+    }
+  } catch (e) {
+    console.warn("Serverless upload fallback:", e);
+  }
+
+  // 2. Client-side fallback if user provided personal access token
+  if (!token) {
+    throw new Error("Unable to upload file: server token not configured and no client token provided.");
+  }
+
   const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
   const headers = {
     "Authorization": `Bearer ${token}`,
@@ -550,12 +579,14 @@ async function githubUpsertFile(owner, repo, filePath, base64Content, commitMsg,
 
   if (!putRes.ok) {
     const errText = await putRes.text();
-    throw new Error(`Upload failed (${filePath}): HTTP ${putRes.status} — Ensure token has Contents: Read & Write. ${errText}`);
+    throw new Error(`Upload failed (${filePath}): HTTP ${putRes.status}. ${errText}`);
   }
   return putRes.json();
 }
 
 async function cleanupStaleAudioFiles(owner, repo, vid, token) {
+  // If no client token, serverless upload handles replacements cleanly
+  if (!token) return;
   const dirUrl = `https://api.github.com/repos/${owner}/${repo}/contents/data/incoming_audio?ref=main`;
   const headers = {
     "Authorization": `Bearer ${token}`,
@@ -689,8 +720,7 @@ async function triggerWorkflow(params) {
   // 2. Direct client GitHub dispatch fallback
   const token = getGithubToken();
   if (!token) {
-    openSettingsModal();
-    throw new Error("GitHub Personal Access Token required to launch cloud jobs.");
+    throw new Error("Unable to trigger workflow. Please check server connection.");
   }
 
   const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflowFile}/dispatches`;
@@ -733,23 +763,41 @@ async function loadRecentRuns() {
   if (!container || !activeChannel) return;
 
   const token = getGithubToken();
+  const sessionToken = getSessionToken();
   const [owner, repo] = activeChannel.repo.split("/");
 
   container.innerHTML = `<div class="p-6 text-center text-xs text-gray-400"><i data-lucide="loader" class="w-4 h-4 animate-spin inline-block mr-1"></i> Checking cloud runs for ${activeChannel.name}...</div>`;
   refreshIcons();
 
   try {
-    const headers = { "Accept": "application/vnd.github+json" };
-    if (token) headers["Authorization"] = `Bearer ${token}`;
+    let runs = null;
 
-    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/runs?per_page=5`, { headers });
-    if (!res.ok) {
-      container.innerHTML = `<div class="p-6 text-center text-xs text-gray-500">Could not fetch cloud runs for ${activeChannel.name}. Please check settings if authentication is required.</div>`;
-      return;
+    // 1. Try serverless endpoint first (no client token required)
+    try {
+      const apiRes = await fetch(`/api/runs?repo=${encodeURIComponent(activeChannel.repo)}&token=${encodeURIComponent(sessionToken)}&gh_token=${encodeURIComponent(token)}`);
+      if (apiRes.ok) {
+        const apiData = await apiRes.json();
+        if (Array.isArray(apiData.workflow_runs)) {
+          runs = apiData.workflow_runs;
+        }
+      }
+    } catch (e) {}
+
+    // 2. Direct client fallback
+    if (!runs) {
+      const headers = { "Accept": "application/vnd.github+json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/actions/runs?per_page=5`, { headers });
+      if (res.ok) {
+        const data = await res.json();
+        runs = data.workflow_runs || [];
+      }
     }
 
-    const data = await res.json();
-    const runs = data.workflow_runs || [];
+    if (!runs) {
+      container.innerHTML = `<div class="p-6 text-center text-xs text-gray-500">Could not fetch cloud runs for ${activeChannel.name}.</div>`;
+      return;
+    }
 
     if (runs.length === 0) {
       container.innerHTML = `<div class="p-6 text-center text-xs text-gray-500">No runs found yet for ${activeChannel.name}. Ready to launch first video!</div>`;
@@ -876,6 +924,7 @@ function openSettingsModal(defaultTab = 'tokens') {
   const inputPat = document.getElementById("input-pat");
   const channelLabel = document.getElementById("settings-channel-label");
   const repoLabel = document.getElementById("settings-repo-label");
+  const btnTokens = document.getElementById("tab-btn-tokens");
   if (!modalSettings) return;
 
   if (activeChannel) {
@@ -883,6 +932,16 @@ function openSettingsModal(defaultTab = 'tokens') {
     if (repoLabel) repoLabel.textContent = activeChannel.repo;
   }
   if (inputPat) inputPat.value = getGithubToken();
+
+  // Hide the token tab completely from non-admin users so they never see or worry about tokens
+  if (btnTokens) {
+    if (currentUser && currentUser.isAdmin) {
+      btnTokens.classList.remove("hidden");
+    } else {
+      btnTokens.classList.add("hidden");
+      defaultTab = "profiles";
+    }
+  }
 
   switchSettingsTab(defaultTab);
   renderProfileSettingsList();
@@ -1878,12 +1937,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const upload = document.getElementById("check-upload").checked;
 
       const token = getGithubToken();
-      if (!token) {
-        openSettingsModal();
-        alert(`Please paste the GitHub Access Token for ${activeChannel.name} first.`);
-        return;
-      }
-
       const vid = extractYoutubeId(url);
       if ((selectedAudioFile || selectedThumbFile) && !vid) {
         alert("Please paste a valid YouTube URL before uploading an MP3 or thumbnail.");
@@ -1898,12 +1951,12 @@ document.addEventListener("DOMContentLoaded", () => {
       refreshIcons();
 
       statusCard.classList.remove("hidden");
-      statusTitle.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Preparing ${activeChannel.repo}...`;
-      statusMsg.textContent = `Connecting to GitHub for channel: ${activeChannel.name}...`;
+      statusTitle.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> Preparing ${activeChannel.name}...`;
+      statusMsg.textContent = `Connecting to cloud pipeline for channel: ${activeChannel.name}...`;
       statusLink.classList.add("hidden");
 
       try {
-        if (selectedAudioFile || selectedThumbFile) {
+        if (selectedAudioFile || selectedThumbFile || selectedSpeakerFile) {
           await uploadMediaAssets(owner, repo, vid, token, (msg) => {
             statusMsg.textContent = msg;
           });
