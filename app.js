@@ -859,6 +859,8 @@ function renderProfileSettingsList() {
   const users = getClientUsers();
   const allChannels = (channels && channels.length > 0) ? channels : DEFAULT_CHANNELS;
 
+  const isAdmin = currentUser && currentUser.isAdmin;
+
   container.innerHTML = Object.keys(users).map(userId => {
     const u = users[userId];
     const isAll = u.isAdmin || (u.channels && u.channels.includes("*"));
@@ -887,6 +889,7 @@ function renderProfileSettingsList() {
               type="text" 
               class="profile-edit-name w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white"
               value="${escapeHtml(u.name)}"
+              ${isAdmin ? '' : 'disabled title="Only Admin can modify names"'}
             >
           </div>
           <div>
@@ -895,7 +898,7 @@ function renderProfileSettingsList() {
               type="text" 
               class="profile-edit-username w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono focus:outline-none focus:border-amber-500 focus:bg-white"
               value="${escapeHtml(u.id)}"
-              ${u.id === 'admin' ? 'disabled title="Master admin ID cannot be renamed"' : ''}
+              ${(u.id === 'admin' || !isAdmin) ? 'disabled title="Only Admin can modify usernames"' : ''}
             >
           </div>
         </div>
@@ -908,6 +911,7 @@ function renderProfileSettingsList() {
                 type="text" 
                 class="profile-edit-password w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono font-bold focus:outline-none focus:border-amber-500 focus:bg-white"
                 value="${escapeHtml(u.password)}"
+                ${isAdmin ? '' : 'disabled title="Only Admin can modify passwords"'}
               >
             </div>
           </div>
@@ -925,27 +929,53 @@ function renderProfileSettingsList() {
   refreshIcons();
 }
 
-function openSettingsModal(defaultTab = 'tokens') {
+function openSettingsModal(defaultTab = 'channel') {
   const modalSettings = document.getElementById("modal-settings");
   const inputPat = document.getElementById("input-pat");
   const channelLabel = document.getElementById("settings-channel-label");
   const repoLabel = document.getElementById("settings-repo-label");
   const btnTokens = document.getElementById("tab-btn-tokens");
+  const btnProfiles = document.getElementById("tab-btn-profiles");
+  const speakerInput = document.getElementById("settings-speaker-name");
+  const ownerInput = document.getElementById("settings-owner-relation");
+  const adminTag = document.getElementById("label-admin-only-tag");
+
   if (!modalSettings) return;
+
+  const isAdmin = currentUser && currentUser.isAdmin;
 
   if (activeChannel) {
     if (channelLabel) channelLabel.textContent = `${activeChannel.name} (${activeChannel.owner})`;
     if (repoLabel) repoLabel.textContent = activeChannel.repo;
+    if (speakerInput) speakerInput.value = activeChannel.speaker || "";
+    if (ownerInput) {
+      ownerInput.value = activeChannel.owner || "";
+      if (isAdmin) {
+        ownerInput.disabled = false;
+        if (adminTag) adminTag.classList.remove("hidden");
+      } else {
+        ownerInput.disabled = true;
+        if (adminTag) adminTag.classList.add("hidden");
+      }
+    }
   }
   if (inputPat) inputPat.value = getGithubToken();
 
-  // Hide the token tab completely from non-admin users so they never see or worry about tokens
+  // Hide the token tab completely from non-admin users
   if (btnTokens) {
-    if (currentUser && currentUser.isAdmin) {
+    if (isAdmin) {
       btnTokens.classList.remove("hidden");
     } else {
       btnTokens.classList.add("hidden");
-      defaultTab = "profiles";
+    }
+  }
+
+  // Profile management tab: Admin only can edit
+  if (btnProfiles) {
+    if (isAdmin) {
+      btnProfiles.classList.remove("hidden");
+    } else {
+      btnProfiles.classList.add("hidden");
     }
   }
 
@@ -957,23 +987,28 @@ function openSettingsModal(defaultTab = 'tokens') {
 }
 
 function switchSettingsTab(tabName) {
+  const tabChannel = document.getElementById("tab-content-channel-config");
   const tabTokens = document.getElementById("tab-content-tokens");
   const tabProfiles = document.getElementById("tab-content-profiles");
+  const btnChannel = document.getElementById("tab-btn-channel-config");
   const btnTokens = document.getElementById("tab-btn-tokens");
   const btnProfiles = document.getElementById("tab-btn-profiles");
 
-  if (!tabTokens || !tabProfiles || !btnTokens || !btnProfiles) return;
+  // Reset all
+  [tabChannel, tabTokens, tabProfiles].forEach(t => t && t.classList.add("hidden"));
+  [btnChannel, btnTokens, btnProfiles].forEach(b => {
+    if (b) b.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1.5";
+  });
 
   if (tabName === "profiles") {
-    tabTokens.classList.add("hidden");
-    tabProfiles.classList.remove("hidden");
-    btnProfiles.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-amber-500 text-slate-950 shadow-sm flex items-center gap-1.5";
-    btnTokens.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1.5";
+    if (tabProfiles) tabProfiles.classList.remove("hidden");
+    if (btnProfiles) btnProfiles.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-amber-500 text-slate-950 shadow-sm flex items-center gap-1.5";
+  } else if (tabName === "tokens") {
+    if (tabTokens) tabTokens.classList.remove("hidden");
+    if (btnTokens) btnTokens.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-amber-500 text-slate-950 shadow-sm flex items-center gap-1.5";
   } else {
-    tabProfiles.classList.add("hidden");
-    tabTokens.classList.remove("hidden");
-    btnTokens.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-amber-500 text-slate-950 shadow-sm flex items-center gap-1.5";
-    btnProfiles.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1.5";
+    if (tabChannel) tabChannel.classList.remove("hidden");
+    if (btnChannel) btnChannel.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-amber-500 text-slate-950 shadow-sm flex items-center gap-1.5";
   }
   refreshIcons();
 }
@@ -1790,16 +1825,110 @@ document.addEventListener("DOMContentLoaded", () => {
   const btnCloseSettings = document.getElementById("btn-close-settings");
   const btnSaveSettings = document.getElementById("btn-save-settings");
   const inputPat = document.getElementById("input-pat");
+  const tabBtnChannel = document.getElementById("tab-btn-channel-config");
   const tabBtnTokens = document.getElementById("tab-btn-tokens");
   const tabBtnProfiles = document.getElementById("tab-btn-profiles");
   const btnSaveProfiles = document.getElementById("btn-save-profiles");
   const btnResetProfiles = document.getElementById("btn-reset-profiles");
+  const btnSaveChannelConfig = document.getElementById("btn-save-channel-config");
+  const inputSettingsCutout = document.getElementById("input-settings-cutout");
 
+  if (tabBtnChannel) tabBtnChannel.addEventListener("click", () => switchSettingsTab("channel"));
   if (tabBtnTokens) tabBtnTokens.addEventListener("click", () => switchSettingsTab("tokens"));
   if (tabBtnProfiles) tabBtnProfiles.addEventListener("click", () => switchSettingsTab("profiles"));
 
-  if (btnSettings) btnSettings.addEventListener("click", () => openSettingsModal('tokens'));
+  if (btnSettings) btnSettings.addEventListener("click", () => openSettingsModal('channel'));
   if (btnCloseSettings) btnCloseSettings.addEventListener("click", closeSettingsModal);
+
+  // Replace default cutout avatar from settings modal
+  if (inputSettingsCutout) {
+    inputSettingsCutout.addEventListener("change", async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file || !activeChannel) return;
+
+      const filenameLabel = document.getElementById("settings-cutout-filename");
+      const statusLabel = document.getElementById("settings-cutout-status");
+      if (filenameLabel) filenameLabel.textContent = `Uploading ${file.name}...`;
+
+      try {
+        const [owner, repo] = activeChannel.repo.split("/");
+        const buf = await file.arrayBuffer();
+        const b64 = arrayBufferToBase64(buf);
+        await githubUpsertFile(
+          owner,
+          repo,
+          "assets/speaker_cutout.png",
+          b64,
+          `Settings: update default speaker cutout avatar for ${activeChannel.name}`,
+          getGithubToken()
+        );
+        if (filenameLabel) filenameLabel.textContent = `✅ Saved ${file.name} as default avatar`;
+        if (statusLabel) statusLabel.textContent = "Synced with repository";
+        alert(`✅ Default speaker cutout avatar updated for ${activeChannel.name}!\nIt will now attach automatically to every new video.`);
+      } catch (err) {
+        if (filenameLabel) filenameLabel.textContent = "Upload failed";
+        alert(`Could not save cutout avatar: ${err.message}`);
+      }
+    });
+  }
+
+  // Save Channel Defaults (Speaker & Relation/Owner)
+  if (btnSaveChannelConfig) {
+    btnSaveChannelConfig.addEventListener("click", async () => {
+      if (!activeChannel) return;
+
+      const speakerInput = document.getElementById("settings-speaker-name");
+      const ownerInput = document.getElementById("settings-owner-relation");
+
+      const newSpeaker = speakerInput ? speakerInput.value.trim() : "";
+      const newOwner = ownerInput ? ownerInput.value.trim() : "";
+
+      btnSaveChannelConfig.disabled = true;
+      btnSaveChannelConfig.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Saving...`;
+      refreshIcons();
+
+      try {
+        const sessionToken = getSessionToken();
+        const res = await fetch("/api/channels", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${sessionToken}`
+          },
+          body: JSON.stringify({
+            channel_id: activeChannel.id,
+            speaker: newSpeaker,
+            owner: (currentUser && currentUser.isAdmin) ? newOwner : undefined
+          })
+        });
+
+        if (res.ok) {
+          if (newSpeaker) activeChannel.speaker = newSpeaker;
+          if (newOwner && currentUser && currentUser.isAdmin) activeChannel.owner = newOwner;
+          renderActiveChannel();
+          renderChannelList();
+          alert(`✅ Channel defaults updated for ${activeChannel.name}!`);
+          closeSettingsModal();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || `Failed to update (HTTP ${res.status})`);
+        }
+      } catch (err) {
+        // Local fallback if running standalone
+        if (newSpeaker) activeChannel.speaker = newSpeaker;
+        if (newOwner && currentUser && currentUser.isAdmin) activeChannel.owner = newOwner;
+        renderActiveChannel();
+        renderChannelList();
+        alert(`✅ Channel defaults saved locally: ${err.message}`);
+        closeSettingsModal();
+      } finally {
+        btnSaveChannelConfig.disabled = false;
+        btnSaveChannelConfig.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i><span>Save Channel Settings</span>`;
+        refreshIcons();
+      }
+    });
+  }
+
   if (btnSaveSettings) {
     btnSaveSettings.addEventListener("click", () => {
       const val = inputPat.value.trim();

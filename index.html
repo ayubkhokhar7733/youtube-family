@@ -622,18 +622,88 @@
 
       <!-- Settings Navigation Tabs -->
       <div class="flex items-center gap-2 border-b border-slate-200 pb-2 shrink-0">
-        <button id="tab-btn-tokens" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-amber-500 text-slate-950 shadow-sm flex items-center gap-1.5">
-          <i data-lucide="key" class="w-3.5 h-3.5"></i>
-          <span>Cloud Token</span>
+        <button id="tab-btn-channel-config" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-amber-500 text-slate-950 shadow-sm flex items-center gap-1.5">
+          <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+          <span>Channel Defaults</span>
         </button>
         <button id="tab-btn-profiles" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1.5">
           <i data-lucide="users" class="w-3.5 h-3.5"></i>
           <span>User Profiles &amp; Passwords</span>
         </button>
+        <button id="tab-btn-tokens" type="button" class="hidden px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1.5">
+          <i data-lucide="key" class="w-3.5 h-3.5"></i>
+          <span>Cloud Token</span>
+        </button>
+      </div>
+
+      <!-- Tab Content: Channel Defaults & Prefixes -->
+      <div id="tab-content-channel-config" class="space-y-4 overflow-y-auto custom-scroll pr-1">
+        <div class="bg-amber-50/70 border border-amber-200/80 rounded-2xl p-3.5 text-xs text-amber-900 leading-relaxed flex items-start gap-2.5">
+          <i data-lucide="sparkles" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+          <div>
+            <strong>Channel Presets &amp; Prefixes:</strong> Lock the default speaker name, change relationship title, or upload a default speaker avatar cutout that attaches automatically to every new video.
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+              Default Authority Speaker Name
+            </label>
+            <input 
+              type="text" 
+              id="settings-speaker-name" 
+              placeholder="e.g. Walter Riso"
+              class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-semibold focus:outline-none focus:border-amber-500 focus:bg-white transition-colors"
+            >
+            <p class="text-[10px] text-slate-500 mt-1">Pre-filled on upload screen. Can still be edited per video.</p>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+              Relation / Owner Label <span id="label-admin-only-tag" class="text-[9px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded ml-1">ADMIN ONLY</span>
+            </label>
+            <input 
+              type="text" 
+              id="settings-owner-relation" 
+              placeholder="e.g. Brother, Friend, Jam Irshad"
+              class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 font-semibold focus:outline-none focus:border-amber-500 focus:bg-white transition-colors"
+            >
+            <p class="text-[10px] text-slate-500 mt-1">Label shown across studio (e.g. Brother &rarr; Friend).</p>
+          </div>
+        </div>
+
+        <!-- Default Cutout Avatar Dropzone -->
+        <div class="space-y-1.5 pt-1">
+          <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider flex items-center justify-between">
+            <span>Default Speaker Cutout Avatar (.png)</span>
+            <span id="settings-cutout-status" class="text-[10px] text-slate-500 normal-case">Saved in channel repository</span>
+          </label>
+          <div class="flex items-center gap-3 bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-3 hover:border-slate-400 transition-colors">
+            <div id="settings-cutout-preview-box" class="w-12 h-12 rounded-xl bg-amber-100/60 border border-amber-300/60 flex items-center justify-center shrink-0 overflow-hidden">
+              <i data-lucide="user-check" class="w-6 h-6 text-amber-700"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p id="settings-cutout-filename" class="text-xs font-bold text-slate-800 truncate">Default avatar active for this channel</p>
+              <p class="text-[10px] text-slate-500">Automatically placed on bottom-left of every video unless overridden.</p>
+            </div>
+            <label class="px-3 py-1.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-xs font-bold text-slate-700 cursor-pointer transition-colors shrink-0 shadow-sm">
+              Replace Avatar
+              <input type="file" id="input-settings-cutout" accept="image/png,image/webp" class="hidden">
+            </label>
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end gap-2 border-t border-slate-100">
+          <button id="btn-save-channel-config" type="button" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs tracking-wide transition-all shadow-sm flex items-center gap-1.5">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>Save Channel Settings</span>
+          </button>
+        </div>
       </div>
 
       <!-- Tab Content: Cloud Token -->
-      <div id="tab-content-tokens" class="space-y-4 overflow-y-auto custom-scroll pr-1">
+      <div id="tab-content-tokens" class="space-y-4 hidden overflow-y-auto custom-scroll pr-1">
         <div class="space-y-3">
           <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">
             Cloud Access Token for <span id="settings-channel-label" class="text-amber-700">Active Channel</span>
