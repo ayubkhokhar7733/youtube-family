@@ -115,7 +115,7 @@ let selectedSpeakerFile = null;
 let isOwnerLocked = false;
 let currentUser = null;
 let authToken = null;
-const UPLOAD_CHUNK_SIZE = 10 * 1024 * 1024; // 10 MB raw per GitHub Contents API PUT
+const UPLOAD_CHUNK_SIZE = 3 * 1024 * 1024; // 3 MB raw per chunk (~4 MB in base64 to fit Vercel 4.5MB request limit)
 
 // Client-side Users & Channel Permissions Directory
 const DEFAULT_CLIENT_USERS = {
