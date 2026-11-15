@@ -521,6 +521,7 @@ function setGithubToken(channelId, tokenValue) {
 }
 
 async function githubUpsertFile(owner, repo, filePath, base64Content, commitMsg, token) {
+  let serverErrorMsg = "";
   // 1. Try serverless /api/upload first (uses backend GITHUB_TOKEN so users are never asked for a token)
   try {
     const sessionToken = getSessionToken();
@@ -540,14 +541,19 @@ async function githubUpsertFile(owner, repo, filePath, base64Content, commitMsg,
     });
     if (upRes.ok) {
       return await upRes.json();
+    } else {
+      const errJson = await upRes.json().catch(() => ({}));
+      serverErrorMsg = errJson.error || `HTTP ${upRes.status}`;
+      console.warn("Serverless upload returned error:", serverErrorMsg);
     }
   } catch (e) {
-    console.warn("Serverless upload fallback:", e);
+    serverErrorMsg = e.message;
+    console.warn("Serverless upload network exception:", e);
   }
 
   // 2. Client-side fallback if user provided personal access token
   if (!token) {
-    throw new Error("Unable to upload file: server token not configured and no client token provided.");
+    throw new Error(serverErrorMsg ? `Upload failed: ${serverErrorMsg}` : "Unable to upload file: please refresh the page and try again.");
   }
 
   const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
