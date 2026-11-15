@@ -17,19 +17,19 @@
       "badge": "FLAGSHIP"
     },
     {
-      "id": "nephew_neuro",
-      "name": "Mente & Enfoque",
+      "id": "sabiduria_estoica",
+      "name": "Sabiduría Estoica",
       "owner": "Nephew",
-      "handle": "@mente-enfoque",
-      "speaker": "Dra. Marian Rojas Estapé",
+      "handle": "@SabiduriaEstoica-z1n",
+      "speaker": "Stoic Arstoo",
       "language": "es",
-      "niche": "Psiquiatría & Manejo del Estrés",
+      "niche": "Filosofía Estoica & Disciplina",
       "schedule_hours": 72,
       "prime_time_utc": 16,
-      "repo": "ayubkhokhar7733/channel-mente-enfoque",
+      "repo": "ayubkhokhar7733/channel-sabiduria-estoica",
       "workflow": "repurpose.yml",
       "is_public_repo": true,
-      "color": "emerald",
+      "color": "amber",
       "badge": "FAMILY"
     },
     {

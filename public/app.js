@@ -20,17 +20,17 @@ const DEFAULT_CHANNELS = [
     badge: "FLAGSHIP"
   },
   {
-    id: "nephew_neuro",
-    name: "Mente & Enfoque",
+    id: "sabiduria_estoica",
+    name: "Sabiduría Estoica",
     owner: "Nephew",
-    handle: "@mente-enfoque",
-    speaker: "Dra. Marian Rojas Estapé",
+    handle: "@SabiduriaEstoica-z1n",
+    speaker: "Stoic Arstoo",
     language: "es",
-    niche: "Psiquiatría & Manejo del Estrés",
+    niche: "Filosofía Estoica & Disciplina",
     schedule_hours: 72,
-    repo: "ayubkhokhar7733/channel-mente-enfoque",
+    repo: "ayubkhokhar7733/channel-sabiduria-estoica",
     workflow: "repurpose.yml",
-    color: "emerald",
+    color: "amber",
     badge: "FAMILY"
   },
   {
@@ -154,10 +154,10 @@ const DEFAULT_CLIENT_USERS = {
   nephew: {
     id: "nephew",
     name: "Nephew",
-    password: "enfoque2026",
-    magicKey: "nephew-mente-enfoque-6214",
+    password: "estoica2026",
+    magicKey: "nephew-sabiduria-estoica-6214",
     isAdmin: false,
-    channels: ["nephew_neuro"]
+    channels: ["sabiduria_estoica"]
   },
   irshad: {
     id: "irshad",

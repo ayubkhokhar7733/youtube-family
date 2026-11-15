@@ -39,10 +39,10 @@ export const USERS = {
   nephew: {
     id: "nephew",
     name: "Nephew",
-    password: "enfoque2026",
-    magicKey: "nephew-mente-enfoque-6214",
+    password: "estoica2026",
+    magicKey: "nephew-sabiduria-estoica-6214",
     isAdmin: false,
-    channels: ["nephew_neuro"]
+    channels: ["sabiduria_estoica"]
   },
   irshad: {
     id: "irshad",
