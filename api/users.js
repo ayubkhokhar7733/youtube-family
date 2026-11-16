@@ -51,6 +51,14 @@ export const USERS = {
     magicKey: "irshad-mente-libre-5192",
     isAdmin: false,
     channels: ["mente_libre"]
+  },
+  zeeshan: {
+    id: "zeeshan",
+    name: "Zeeshan Mushir",
+    password: "calma2026",
+    magicKey: "zeeshan-mente-calma-8392",
+    isAdmin: false,
+    channels: ["mente_en_calma"]
   }
 };
 

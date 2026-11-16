@@ -95,7 +95,7 @@ const DEFAULT_CHANNELS = [
     name: "Mente Libre",
     owner: "Jam Irshad",
     handle: "@mentelibre2027",
-    speaker: "Dra. Marian Rojas Estapé",
+    speaker: "Walter Riso",
     language: "es",
     niche: "Psicología & Crecimiento Personal",
     schedule_hours: 72,
@@ -104,6 +104,21 @@ const DEFAULT_CHANNELS = [
     is_public_repo: true,
     color: "amber",
     badge: "FAMILY"
+  },
+  {
+    id: "mente_en_calma",
+    name: "Mente en Calma",
+    owner: "Zeeshan Mushir",
+    handle: "@MenteEnCalmaofficials",
+    speaker: "Dra. Marian Rojas Estapé",
+    language: "es",
+    niche: "Psiquiatría & Gestión Emocional",
+    schedule_hours: 72,
+    repo: "ayubkhokhar7733/channel-mente-en-calma",
+    workflow: "repurpose.yml",
+    is_public_repo: true,
+    color: "teal",
+    badge: "FRIEND"
   }
 ];
 
@@ -166,6 +181,14 @@ const DEFAULT_CLIENT_USERS = {
     magicKey: "irshad-mente-libre-5192",
     isAdmin: false,
     channels: ["mente_libre"]
+  },
+  zeeshan: {
+    id: "zeeshan",
+    name: "Zeeshan Mushir",
+    password: "calma2026",
+    magicKey: "zeeshan-mente-calma-8392",
+    isAdmin: false,
+    channels: ["mente_en_calma"]
   }
 };
 

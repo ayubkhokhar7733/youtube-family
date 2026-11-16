@@ -111,6 +111,22 @@
       "is_public_repo": true,
       "color": "amber",
       "badge": "FAMILY"
+    },
+    {
+      "id": "mente_en_calma",
+      "name": "Mente en Calma",
+      "owner": "Zeeshan Mushir",
+      "handle": "@MenteEnCalmaofficials",
+      "speaker": "Dra. Marian Rojas Estapé",
+      "language": "es",
+      "niche": "Psiquiatría & Gestión Emocional",
+      "schedule_hours": 72,
+      "prime_time_utc": 16,
+      "repo": "ayubkhokhar7733/channel-mente-en-calma",
+      "workflow": "repurpose.yml",
+      "is_public_repo": true,
+      "color": "teal",
+      "badge": "FRIEND"
     }
   ]
 }
