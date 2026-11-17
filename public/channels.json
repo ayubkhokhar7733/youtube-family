@@ -33,10 +33,11 @@
       "badge": "FAMILY"
     },
     {
-      "id": "brother_stoic",
+      "id": "stoic_frontier",
       "name": "The Stoic Frontier",
-      "owner": "Brother",
-      "handle": "@stoicfrontier",
+      "owner": "Waqar Chandiyo",
+      "handle": "@TheStoicFrontier-r1c",
+      "channel_id": "UCsATd5NyooXnnSilgY0FK4Q",
       "speaker": "Marcus Aurelius / Seneca",
       "language": "en",
       "niche": "Stoic Philosophy & Resilience",

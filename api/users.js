@@ -67,6 +67,14 @@ export const USERS = {
     magicKey: "sadiq-nilda-inspira-7182",
     isAdmin: false,
     channels: ["nilda_inspira"]
+  },
+  waqar: {
+    id: "waqar",
+    name: "Waqar Chandiyo",
+    password: "stoic2026",
+    magicKey: "waqar-stoic-frontier-5819",
+    isAdmin: false,
+    channels: ["stoic_frontier"]
   }
 };
 

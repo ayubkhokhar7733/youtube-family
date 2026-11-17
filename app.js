@@ -34,10 +34,11 @@ const DEFAULT_CHANNELS = [
     badge: "FAMILY"
   },
   {
-    id: "brother_stoic",
+    id: "stoic_frontier",
     name: "The Stoic Frontier",
-    owner: "Brother",
-    handle: "@stoicfrontier",
+    owner: "Waqar Chandiyo",
+    handle: "@TheStoicFrontier-r1c",
+    channel_id: "UCsATd5NyooXnnSilgY0FK4Q",
     speaker: "Marcus Aurelius / Seneca",
     language: "en",
     niche: "Stoic Philosophy & Resilience",
@@ -212,6 +213,14 @@ const DEFAULT_CLIENT_USERS = {
     magicKey: "sadiq-nilda-inspira-7182",
     isAdmin: false,
     channels: ["nilda_inspira"]
+  },
+  waqar: {
+    id: "waqar",
+    name: "Waqar Chandiyo",
+    password: "stoic2026",
+    magicKey: "waqar-stoic-frontier-5819",
+    isAdmin: false,
+    channels: ["stoic_frontier"]
   }
 };
 
