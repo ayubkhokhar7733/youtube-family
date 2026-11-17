@@ -59,6 +59,14 @@ export const USERS = {
     magicKey: "zeeshan-mente-calma-8392",
     isAdmin: false,
     channels: ["mente_en_calma"]
+  },
+  sadiq: {
+    id: "sadiq",
+    name: "Muhammad Sadiq",
+    password: "nilda2026",
+    magicKey: "sadiq-nilda-inspira-7182",
+    isAdmin: false,
+    channels: ["nilda_inspira"]
   }
 };
 

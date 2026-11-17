@@ -119,6 +119,21 @@ const DEFAULT_CHANNELS = [
     is_public_repo: true,
     color: "teal",
     badge: "FRIEND"
+  },
+  {
+    id: "nilda_inspira",
+    name: "Nilda Inspira",
+    owner: "Muhammad Sadiq",
+    handle: "@NildaInspira1.0",
+    speaker: "Nilda Chiaraviglio",
+    language: "es",
+    niche: "Relaciones de Pareja & Amor Propio",
+    schedule_hours: 72,
+    repo: "ayubkhokhar7733/channel-nilda-inspira",
+    workflow: "repurpose.yml",
+    is_public_repo: true,
+    color: "rose",
+    badge: "FRIEND"
   }
 ];
 
@@ -189,6 +204,14 @@ const DEFAULT_CLIENT_USERS = {
     magicKey: "zeeshan-mente-calma-8392",
     isAdmin: false,
     channels: ["mente_en_calma"]
+  },
+  sadiq: {
+    id: "sadiq",
+    name: "Muhammad Sadiq",
+    password: "nilda2026",
+    magicKey: "sadiq-nilda-inspira-7182",
+    isAdmin: false,
+    channels: ["nilda_inspira"]
   }
 };
 
