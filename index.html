@@ -627,8 +627,8 @@
           <span>Channel Defaults</span>
         </button>
         <button id="tab-btn-profiles" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1.5">
-          <i data-lucide="users" class="w-3.5 h-3.5"></i>
-          <span>User Profiles &amp; Passwords</span>
+          <i data-lucide="key" class="w-3.5 h-3.5"></i>
+          <span id="tab-profiles-btn-text">Account &amp; Password</span>
         </button>
         <button id="tab-btn-tokens" type="button" class="hidden px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center gap-1.5">
           <i data-lucide="key" class="w-3.5 h-3.5"></i>
@@ -728,27 +728,102 @@
 
       <!-- Tab Content: Profiles & Passwords -->
       <div id="tab-content-profiles" class="space-y-4 hidden overflow-y-auto custom-scroll pr-1">
-        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-xs text-amber-900 leading-relaxed flex items-start gap-2">
-          <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
-          <div>
-            <strong>Profile Manager:</strong> Modify usernames, passwords/PINs, display names, and channel access here. Changes persist in this browser and update login credentials instantly.
+        
+        <!-- Section 1: Personal Password Changer (Visible to EVERY user for THEIR OWN account) -->
+        <div id="box-user-self-security" class="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-4">
+          <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
+            <div>
+              <h4 class="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                <i data-lucide="key-round" class="w-4 h-4 text-amber-600"></i>
+                <span>Change Your Password</span>
+              </h4>
+              <p class="text-[11px] text-slate-500">Update your account login password. Takes effect immediately across all devices.</p>
+            </div>
+            <span id="self-profile-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg bg-amber-100 text-amber-800 border border-amber-300"></span>
+          </div>
+
+          <form id="form-change-self-password" class="space-y-3">
+            <div id="self-curr-pass-group">
+              <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">Current Password / PIN</label>
+              <div class="relative">
+                <input 
+                  type="password" 
+                  id="self-current-password" 
+                  placeholder="Enter current password..." 
+                  class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 pr-10 text-xs text-slate-900 font-mono focus:outline-none focus:border-amber-500 transition-colors"
+                >
+                <button type="button" class="btn-toggle-eye absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">New Password / PIN</label>
+                <div class="relative">
+                  <input 
+                    type="password" 
+                    id="self-new-password" 
+                    placeholder="Min 4 characters..." 
+                    class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 pr-10 text-xs text-slate-900 font-mono focus:outline-none focus:border-amber-500 transition-colors"
+                  >
+                  <button type="button" class="btn-toggle-eye absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">Confirm New Password</label>
+                <div class="relative">
+                  <input 
+                    type="password" 
+                    id="self-confirm-password" 
+                    placeholder="Re-type new password..." 
+                    class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 pr-10 text-xs text-slate-900 font-mono focus:outline-none focus:border-amber-500 transition-colors"
+                  >
+                  <button type="button" class="btn-toggle-eye absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div id="self-pass-status-msg" class="hidden text-xs rounded-xl p-3 font-semibold"></div>
+
+            <div class="pt-1 flex justify-end">
+              <button id="btn-submit-self-password" type="submit" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs tracking-wide transition-all shadow-sm flex items-center gap-1.5">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                <span>Update My Password</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Section 2: Fleet Management (Visible ONLY to Admin) -->
+        <div id="box-admin-profiles-management" class="space-y-3 hidden">
+          <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3 text-xs text-amber-900 leading-relaxed flex items-start gap-2">
+            <i data-lucide="shield" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+            <div>
+              <strong>Fleet Admin Directory:</strong> Manage member display names and set member PINs/passwords. Passwords are masked for privacy.
+            </div>
+          </div>
+
+          <!-- Dynamic User Cards for Admin -->
+          <div id="user-profiles-list" class="space-y-3">
+            <!-- Populated by JS for Admin only -->
+          </div>
+
+          <div class="pt-2 flex items-center justify-between border-t border-slate-100">
+            <span class="text-[11px] text-slate-400">Admin Mode &bull; Passwords masked</span>
+            <button id="btn-save-profiles" type="button" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs tracking-wide transition-all shadow-sm flex items-center gap-1.5">
+              <i data-lucide="save" class="w-4 h-4"></i>
+              <span>Save Fleet Changes</span>
+            </button>
           </div>
         </div>
 
-        <!-- Dynamic User List Container -->
-        <div id="user-profiles-list" class="space-y-3">
-          <!-- Populated by JS -->
-        </div>
-
-        <div class="pt-2 flex items-center justify-between border-t border-slate-100">
-          <button id="btn-reset-profiles" type="button" class="px-3 py-2 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-100 font-semibold text-xs transition-colors">
-            Reset to Defaults
-          </button>
-          <button id="btn-save-profiles" type="button" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs tracking-wide transition-all shadow-sm flex items-center gap-1.5">
-            <i data-lucide="save" class="w-4 h-4"></i>
-            <span>Save Profiles &amp; Passwords</span>
-          </button>
-        </div>
       </div>
     </div>
   </div>

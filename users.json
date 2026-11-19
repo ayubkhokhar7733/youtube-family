@@ -1,0 +1,74 @@
+{
+  "admin": {
+    "id": "admin",
+    "name": "Ayub (Fleet Admin)",
+    "password": "Ayub@42004200",
+    "magicKey": "master-admin-fleet-key-7733",
+    "isAdmin": true,
+    "channels": ["*"]
+  },
+  "shafqat": {
+    "id": "shafqat",
+    "name": "Shafqat Chadiyo",
+    "password": "arte2026",
+    "magicKey": "shafqat-arte-psique-9281",
+    "isAdmin": false,
+    "channels": ["el_arte_psique"]
+  },
+  "zahid": {
+    "id": "zahid",
+    "name": "Zahid Khurshid",
+    "password": "mejora2026",
+    "magicKey": "zahid-mejora-dia-4819",
+    "isAdmin": false,
+    "channels": ["mejora_dia_a_dia"]
+  },
+  "brother": {
+    "id": "brother",
+    "name": "Brother",
+    "password": "acero2026",
+    "magicKey": "brother-habitos-stoic-1934",
+    "isAdmin": false,
+    "channels": ["habitos_de_acero", "brother_stoic"]
+  },
+  "nephew": {
+    "id": "nephew",
+    "name": "Nephew",
+    "password": "estoica2026",
+    "magicKey": "nephew-sabiduria-estoica-6214",
+    "isAdmin": false,
+    "channels": ["sabiduria_estoica"]
+  },
+  "irshad": {
+    "id": "irshad",
+    "name": "Jam Irshad",
+    "password": "libre2026",
+    "magicKey": "irshad-mente-libre-5192",
+    "isAdmin": false,
+    "channels": ["mente_libre"]
+  },
+  "zeeshan": {
+    "id": "zeeshan",
+    "name": "Zeeshan Mushir",
+    "password": "calma2026",
+    "magicKey": "zeeshan-mente-calma-8392",
+    "isAdmin": false,
+    "channels": ["mente_en_calma"]
+  },
+  "sadiq": {
+    "id": "sadiq",
+    "name": "Muhammad Sadiq",
+    "password": "nilda2026",
+    "magicKey": "sadiq-nilda-inspira-7182",
+    "isAdmin": false,
+    "channels": ["nilda_inspira"]
+  },
+  "waqar": {
+    "id": "waqar",
+    "name": "Waqar Chandiyo",
+    "password": "stoic2026",
+    "magicKey": "waqar-stoic-frontier-5819",
+    "isAdmin": false,
+    "channels": ["stoic_frontier"]
+  }
+}

@@ -911,10 +911,13 @@ function renderProfileSettingsList() {
   const container = document.getElementById("user-profiles-list");
   if (!container) return;
 
-  const users = getClientUsers();
-  const allChannels = (channels && channels.length > 0) ? channels : DEFAULT_CHANNELS;
-
   const isAdmin = currentUser && currentUser.isAdmin;
+  if (!isAdmin) {
+    container.innerHTML = "";
+    return;
+  }
+
+  const users = getClientUsers();
 
   container.innerHTML = Object.keys(users).map(userId => {
     const u = users[userId];
@@ -926,7 +929,7 @@ function renderProfileSettingsList() {
         <div class="flex items-center justify-between border-b border-slate-100 pb-2">
           <div class="flex items-center gap-2">
             <span class="w-7 h-7 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center font-bold text-amber-700 text-xs">
-              ${escapeHtml(u.name.charAt(0))}
+              ${escapeHtml(u.name ? u.name.charAt(0) : '?')}
             </span>
             <div>
               <span class="text-xs font-bold text-slate-900">${escapeHtml(u.name)}</span>
@@ -944,7 +947,6 @@ function renderProfileSettingsList() {
               type="text" 
               class="profile-edit-name w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-amber-500 focus:bg-white"
               value="${escapeHtml(u.name)}"
-              ${isAdmin ? '' : 'disabled title="Only Admin can modify names"'}
             >
           </div>
           <div>
@@ -953,21 +955,24 @@ function renderProfileSettingsList() {
               type="text" 
               class="profile-edit-username w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono focus:outline-none focus:border-amber-500 focus:bg-white"
               value="${escapeHtml(u.id)}"
-              ${(u.id === 'admin' || !isAdmin) ? 'disabled title="Only Admin can modify usernames"' : ''}
+              ${u.id === 'admin' ? 'disabled title="Admin username cannot be changed"' : ''}
             >
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">PIN / Password</label>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">New Password / PIN</label>
             <div class="relative">
               <input 
-                type="text" 
-                class="profile-edit-password w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 font-mono font-bold focus:outline-none focus:border-amber-500 focus:bg-white"
-                value="${escapeHtml(u.password)}"
-                ${isAdmin ? '' : 'disabled title="Only Admin can modify passwords"'}
+                type="password" 
+                class="profile-edit-password w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 pr-10 text-xs text-slate-900 font-mono font-bold focus:outline-none focus:border-amber-500 focus:bg-white"
+                value=""
+                placeholder="Leave blank to keep current"
               >
+              <button type="button" class="btn-toggle-eye absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </button>
             </div>
           </div>
           <div>
@@ -991,9 +996,16 @@ function openSettingsModal(defaultTab = 'channel') {
   const repoLabel = document.getElementById("settings-repo-label");
   const btnTokens = document.getElementById("tab-btn-tokens");
   const btnProfiles = document.getElementById("tab-btn-profiles");
+  const tabProfilesBtnText = document.getElementById("tab-profiles-btn-text");
   const speakerInput = document.getElementById("settings-speaker-name");
   const ownerInput = document.getElementById("settings-owner-relation");
   const adminTag = document.getElementById("label-admin-only-tag");
+
+  const boxSelf = document.getElementById("box-user-self-security");
+  const boxAdmin = document.getElementById("box-admin-profiles-management");
+  const selfBadge = document.getElementById("self-profile-badge");
+  const selfCurrPassGroup = document.getElementById("self-curr-pass-group");
+  const statusMsg = document.getElementById("self-pass-status-msg");
 
   if (!modalSettings) return;
 
@@ -1025,17 +1037,50 @@ function openSettingsModal(defaultTab = 'channel') {
     }
   }
 
-  // Profile management tab: Admin only can edit
+  // Configure Account / Profiles tab based on role
   if (btnProfiles) {
+    btnProfiles.classList.remove("hidden");
+    if (tabProfilesBtnText) {
+      tabProfilesBtnText.textContent = isAdmin ? "Fleet Users & Passwords (Admin)" : "My Password & Account";
+    }
+  }
+
+  // Setup Section 1 (Personal Security)
+  if (boxSelf) {
+    boxSelf.classList.remove("hidden");
+    if (selfBadge) selfBadge.textContent = currentUser ? `@${currentUser.id}` : "";
+    if (selfCurrPassGroup) {
+      if (isAdmin) {
+        selfCurrPassGroup.classList.add("hidden");
+      } else {
+        selfCurrPassGroup.classList.remove("hidden");
+      }
+    }
+    const currPassInp = document.getElementById("self-current-password");
+    const newPassInp = document.getElementById("self-new-password");
+    const confPassInp = document.getElementById("self-confirm-password");
+    if (currPassInp) currPassInp.value = "";
+    if (newPassInp) newPassInp.value = "";
+    if (confPassInp) confPassInp.value = "";
+    if (statusMsg) {
+      statusMsg.textContent = "";
+      statusMsg.className = "hidden text-xs rounded-xl p-3 font-semibold";
+    }
+  }
+
+  // Setup Section 2 (Admin Fleet Directory)
+  if (boxAdmin) {
     if (isAdmin) {
-      btnProfiles.classList.remove("hidden");
+      boxAdmin.classList.remove("hidden");
+      renderProfileSettingsList();
     } else {
-      btnProfiles.classList.add("hidden");
+      boxAdmin.classList.add("hidden");
+      const listContainer = document.getElementById("user-profiles-list");
+      if (listContainer) listContainer.innerHTML = "";
     }
   }
 
   switchSettingsTab(defaultTab);
-  renderProfileSettingsList();
 
   modalSettings.classList.remove("hidden");
   modalSettings.classList.add("flex");
@@ -1994,57 +2039,198 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Save Profiles & Passwords handler
+  // Password eye toggle delegation
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".btn-toggle-eye");
+    if (!btn) return;
+    const input = btn.parentElement.querySelector("input");
+    if (!input) return;
+    if (input.type === "password") {
+      input.type = "text";
+      btn.innerHTML = `<i data-lucide="eye-off" class="w-4 h-4 text-slate-700"></i>`;
+    } else {
+      input.type = "password";
+      btn.innerHTML = `<i data-lucide="eye" class="w-4 h-4 text-slate-400"></i>`;
+    }
+    refreshIcons();
+  });
+
+  // Self Password Change Form Handler
+  const formSelfPassword = document.getElementById("form-change-self-password");
+  const btnSubmitSelfPassword = document.getElementById("btn-submit-self-password");
+  const selfPassStatusMsg = document.getElementById("self-pass-status-msg");
+
+  if (formSelfPassword) {
+    formSelfPassword.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const currPass = document.getElementById("self-current-password")?.value || "";
+      const newPass = document.getElementById("self-new-password")?.value || "";
+      const confPass = document.getElementById("self-confirm-password")?.value || "";
+
+      function showStatus(msg, isSuccess) {
+        if (!selfPassStatusMsg) return;
+        selfPassStatusMsg.textContent = msg;
+        selfPassStatusMsg.className = isSuccess 
+          ? "text-xs rounded-xl p-3 font-semibold bg-emerald-50 border border-emerald-200 text-emerald-800"
+          : "text-xs rounded-xl p-3 font-semibold bg-rose-50 border border-rose-200 text-rose-800";
+        selfPassStatusMsg.classList.remove("hidden");
+      }
+
+      const isAdmin = currentUser && currentUser.isAdmin;
+      if (!isAdmin && !currPass.trim()) {
+        showStatus("Please enter your current password.", false);
+        return;
+      }
+
+      if (!newPass.trim() || newPass.trim().length < 4) {
+        showStatus("New password must be at least 4 characters long.", false);
+        return;
+      }
+
+      if (newPass.trim() !== confPass.trim()) {
+        showStatus("New passwords do not match. Please verify.", false);
+        return;
+      }
+
+      btnSubmitSelfPassword.disabled = true;
+      btnSubmitSelfPassword.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Updating...`;
+      refreshIcons();
+
+      try {
+        const sessionToken = getSessionToken();
+        const ghToken = getGithubToken();
+
+        const res = await fetch("/api/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + sessionToken
+          },
+          body: JSON.stringify({
+            action: "change_password",
+            current_password: currPass.trim(),
+            new_password: newPass.trim(),
+            gh_token: ghToken
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          // Update local session
+          if (currentUser) {
+            currentUser.password = newPass.trim();
+            localStorage.setItem("fleet_session_user", JSON.stringify(currentUser));
+          }
+          const usersMap = getClientUsers();
+          if (currentUser && usersMap[currentUser.id]) {
+            usersMap[currentUser.id].password = newPass.trim();
+            saveClientUsers(usersMap);
+          }
+
+          showStatus("✅ Password updated successfully! Your new password is now active across all devices.", true);
+          document.getElementById("self-current-password").value = "";
+          document.getElementById("self-new-password").value = "";
+          document.getElementById("self-confirm-password").value = "";
+        } else {
+          showStatus(data.error || "Failed to update password. Please check your credentials.", false);
+        }
+      } catch (err) {
+        // Fallback for standalone static mode
+        if (currentUser) {
+          const usersMap = getClientUsers();
+          if (!isAdmin && usersMap[currentUser.id] && usersMap[currentUser.id].password !== currPass.trim()) {
+            showStatus("Current password is incorrect.", false);
+            btnSubmitSelfPassword.disabled = false;
+            btnSubmitSelfPassword.innerHTML = `<i data-lucide="shield-check" class="w-4 h-4"></i> Update My Password`;
+            refreshIcons();
+            return;
+          }
+          currentUser.password = newPass.trim();
+          localStorage.setItem("fleet_session_user", JSON.stringify(currentUser));
+          if (usersMap[currentUser.id]) {
+            usersMap[currentUser.id].password = newPass.trim();
+            saveClientUsers(usersMap);
+          }
+          showStatus("✅ Password updated successfully in browser storage!", true);
+        } else {
+          showStatus("Network error updating password: " + err.message, false);
+        }
+      } finally {
+        btnSubmitSelfPassword.disabled = false;
+        btnSubmitSelfPassword.innerHTML = `<i data-lucide="shield-check" class="w-4 h-4"></i> Update My Password`;
+        refreshIcons();
+      }
+    });
+  }
+
+  // Admin Save Fleet Profiles & Passwords handler
   if (btnSaveProfiles) {
-    btnSaveProfiles.addEventListener("click", () => {
+    btnSaveProfiles.addEventListener("click", async () => {
       const userCards = document.querySelectorAll("#user-profiles-list [data-profile-id]");
       if (!userCards || userCards.length === 0) return;
 
       const currentUsersMap = getClientUsers();
       const updatedMap = { ...currentUsersMap };
+      const serverPayload = {};
 
       userCards.forEach(card => {
         const origId = card.getAttribute("data-profile-id");
         const nameInput = card.querySelector(".profile-edit-name");
-        const userInput = card.querySelector(".profile-edit-username");
         const passInput = card.querySelector(".profile-edit-password");
 
         if (origId && currentUsersMap[origId]) {
           const newName = nameInput ? nameInput.value.trim() : currentUsersMap[origId].name;
-          const newPass = passInput ? passInput.value.trim() : currentUsersMap[origId].password;
-          let newId = userInput ? userInput.value.trim().toLowerCase() : origId;
+          const enteredPass = passInput ? passInput.value.trim() : "";
+          const newPass = enteredPass.length >= 4 ? enteredPass : currentUsersMap[origId].password;
 
-          if (!newId) newId = origId;
-          if (!newName) return;
-          if (!newPass) return;
+          if (newName) currentUsersMap[origId].name = newName;
+          if (enteredPass.length >= 4) currentUsersMap[origId].password = newPass;
 
-          const existingData = { ...currentUsersMap[origId] };
-          existingData.name = newName;
-          existingData.password = newPass;
-
-          if (newId !== origId) {
-            existingData.id = newId;
-            delete updatedMap[origId];
-            updatedMap[newId] = existingData;
-          } else {
-            updatedMap[origId] = existingData;
-          }
-
-          // If current logged in user changed their own info, update current session
-          if (currentUser && (currentUser.id === origId || currentUser.id === newId)) {
-            currentUser.id = newId;
-            currentUser.name = newName;
-            currentUser.password = newPass;
-            localStorage.setItem("fleet_session_user", JSON.stringify(currentUser));
-            const profileName = document.getElementById("user-profile-name");
-            if (profileName) profileName.textContent = newName;
-          }
+          serverPayload[origId] = {
+            name: newName,
+            password: enteredPass.length >= 4 ? newPass : undefined
+          };
+          updatedMap[origId] = { ...currentUsersMap[origId] };
         }
       });
 
-      saveClientUsers(updatedMap);
-      renderProfileSettingsList();
-      alert("✅ User profile credentials and passwords updated successfully!");
+      btnSaveProfiles.disabled = true;
+      btnSaveProfiles.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Saving...`;
+      refreshIcons();
+
+      try {
+        const sessionToken = getSessionToken();
+        const ghToken = getGithubToken();
+
+        const res = await fetch("/api/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + sessionToken
+          },
+          body: JSON.stringify({
+            action: "admin_save_all",
+            updated_users: serverPayload,
+            gh_token: ghToken
+          })
+        });
+
+        if (res.ok) {
+          saveClientUsers(updatedMap);
+          alert("✅ Fleet member credentials and passwords updated successfully on server!");
+        } else {
+          saveClientUsers(updatedMap);
+          alert("✅ Fleet credentials saved locally.");
+        }
+      } catch (e) {
+        saveClientUsers(updatedMap);
+        alert("✅ Fleet credentials saved locally.");
+      } finally {
+        btnSaveProfiles.disabled = false;
+        btnSaveProfiles.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i> Save Fleet Changes`;
+        renderProfileSettingsList();
+        refreshIcons();
+      }
     });
   }
 
