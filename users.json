@@ -2,7 +2,7 @@
   "admin": {
     "id": "admin",
     "name": "Ayub (Fleet Admin)",
-    "password": "Ayub@42004200",
+    "password": "Ayub@420420",
     "magicKey": "master-admin-fleet-key-7733",
     "isAdmin": true,
     "channels": ["*"]

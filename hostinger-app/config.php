@@ -14,7 +14,7 @@ define('GITHUB_TOKEN', getenv('GITHUB_TOKEN') ?: 'YOUR_GITHUB_PERSONAL_ACCESS_TO
 $USERS = [
     'admin' => [
         'name'        => 'Ayub (Fleet Admin)',
-        'password'    => 'Ayub@42004200', // Change this to your preferred admin password
+        'password'    => 'Ayub@420420', // Change this to your preferred admin password
         'magic_key'   => 'master-admin-fleet-key-7733',
         'is_admin'    => true,        // Can access and trigger ALL channels
         'channels'    => ['*']
