@@ -49,11 +49,11 @@ const DEFAULT_CHANNELS = [
     badge: "FAMILY"
   },
   {
-    id: "habitos_de_acero",
-    name: "Hábitos de Acero",
+    id: "sabiduria_femenina",
+    name: "Sabiduría Femenina 2026",
     owner: "Brother",
-    handle: "@HábitosdeAcero2008",
-    speaker: "Dr Mario",
+    handle: "@SabiduriaFemenina2026",
+    speaker: "Nilda Chiaraviglio & Psicólogas",
     language: "es",
     niche: "Desarrollo Personal & Liderazgo",
     schedule_hours: 72,
@@ -180,7 +180,7 @@ const DEFAULT_CLIENT_USERS = {
     password: "acero2026",
     magicKey: "brother-habitos-stoic-1934",
     isAdmin: false,
-    channels: ["habitos_de_acero", "brother_stoic"]
+    channels: ["sabiduria_femenina", "brother_stoic"]
   },
   nephew: {
     id: "nephew",
@@ -1408,7 +1408,7 @@ async function handleBulkImport() {
   try {
     // If it's @MenteImparable-e6u, we have all 15 videos pre-indexed!
     if (channelVal.includes("MenteImparable") || channelVal.includes("menteimparable")) {
-      const res = await fetch(`channels/habitos_de_acero/queue.json?t=${Date.now()}`);
+      const res = await fetch(`channels/sabiduria_femenina/queue.json?t=${Date.now()}`);
       if (res.ok) {
         const videos = await res.json();
         const token = getSessionToken();

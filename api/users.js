@@ -37,7 +37,7 @@ export const DEFAULT_USERS = {
     password: "acero2026",
     magicKey: "brother-habitos-stoic-1934",
     isAdmin: false,
-    channels: ["habitos_de_acero", "brother_stoic"]
+    channels: ["sabiduria_femenina", "brother_stoic"]
   },
   nephew: {
     id: "nephew",

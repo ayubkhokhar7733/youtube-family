@@ -5,7 +5,9 @@
     "password": "Ayub@420420",
     "magicKey": "master-admin-fleet-key-7733",
     "isAdmin": true,
-    "channels": ["*"]
+    "channels": [
+      "*"
+    ]
   },
   "shafqat": {
     "id": "shafqat",
@@ -13,7 +15,9 @@
     "password": "arte2026",
     "magicKey": "shafqat-arte-psique-9281",
     "isAdmin": false,
-    "channels": ["el_arte_psique"]
+    "channels": [
+      "el_arte_psique"
+    ]
   },
   "zahid": {
     "id": "zahid",
@@ -21,15 +25,19 @@
     "password": "mejora2026",
     "magicKey": "zahid-mejora-dia-4819",
     "isAdmin": false,
-    "channels": ["mejora_dia_a_dia"]
+    "channels": [
+      "mejora_dia_a_dia"
+    ]
   },
   "brother": {
     "id": "brother",
-    "name": "Brother",
+    "name": "Brother (Sabiduría Femenina)",
     "password": "acero2026",
-    "magicKey": "brother-habitos-stoic-1934",
+    "magicKey": "brother-sabiduria-femenina-2026",
     "isAdmin": false,
-    "channels": ["habitos_de_acero", "brother_stoic"]
+    "channels": [
+      "sabiduria_femenina"
+    ]
   },
   "nephew": {
     "id": "nephew",
@@ -37,7 +45,9 @@
     "password": "estoica2026",
     "magicKey": "nephew-sabiduria-estoica-6214",
     "isAdmin": false,
-    "channels": ["sabiduria_estoica"]
+    "channels": [
+      "sabiduria_estoica"
+    ]
   },
   "irshad": {
     "id": "irshad",
@@ -45,7 +55,9 @@
     "password": "libre2026",
     "magicKey": "irshad-mente-libre-5192",
     "isAdmin": false,
-    "channels": ["mente_libre"]
+    "channels": [
+      "mente_libre"
+    ]
   },
   "zeeshan": {
     "id": "zeeshan",
@@ -53,7 +65,9 @@
     "password": "calma2026",
     "magicKey": "zeeshan-mente-calma-8392",
     "isAdmin": false,
-    "channels": ["mente_en_calma"]
+    "channels": [
+      "mente_en_calma"
+    ]
   },
   "sadiq": {
     "id": "sadiq",
@@ -61,7 +75,9 @@
     "password": "nilda2026",
     "magicKey": "sadiq-nilda-inspira-7182",
     "isAdmin": false,
-    "channels": ["nilda_inspira"]
+    "channels": [
+      "nilda_inspira"
+    ]
   },
   "waqar": {
     "id": "waqar",
@@ -69,6 +85,8 @@
     "password": "stoic2026",
     "magicKey": "waqar-stoic-frontier-5819",
     "isAdmin": false,
-    "channels": ["stoic_frontier"]
+    "channels": [
+      "stoic_frontier"
+    ]
   }
 }

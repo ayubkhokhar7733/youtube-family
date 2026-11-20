@@ -50,22 +50,6 @@
       "badge": "FAMILY"
     },
     {
-      "id": "habitos_de_acero",
-      "name": "Hábitos de Acero",
-      "owner": "Brother",
-      "handle": "@HábitosdeAcero2008",
-      "speaker": "Dr Mario",
-      "language": "es",
-      "niche": "Desarrollo Personal & Liderazgo",
-      "schedule_hours": 72,
-      "prime_time_utc": 16,
-      "repo": "ayubkhokhar7733/channel-habitos-acero",
-      "workflow": "repurpose.yml",
-      "is_public_repo": true,
-      "color": "rose",
-      "badge": "FAMILY"
-    },
-    {
       "id": "mejora_dia_a_dia",
       "name": "Mejora Día a Día",
       "owner": "Zahid Khurshid",
@@ -144,6 +128,22 @@
       "is_public_repo": true,
       "color": "rose",
       "badge": "FRIEND"
+    },
+    {
+      "id": "sabiduria_femenina",
+      "name": "Sabiduría Femenina 2026",
+      "owner": "Brother",
+      "handle": "@SabiduriaFemenina2026",
+      "speaker": "Nilda Chiaraviglio & Psicólogas",
+      "language": "es",
+      "niche": "Psicología Femenina & Crecimiento Personal",
+      "schedule_hours": 72,
+      "prime_time_utc": 16,
+      "repo": "ayubkhokhar7733/channel-sabiduria-femenina",
+      "workflow": "repurpose.yml",
+      "is_public_repo": true,
+      "color": "rose",
+      "badge": "FAMILY"
     }
   ]
 }
