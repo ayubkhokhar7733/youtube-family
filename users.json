@@ -88,5 +88,15 @@
     "channels": [
       "stoic_frontier"
     ]
+  },
+  "esencia": {
+    "id": "esencia",
+    "name": "Esencia Femenina Member",
+    "password": "esencia2026",
+    "magicKey": "esencia-femenina-oficial-2026",
+    "isAdmin": false,
+    "channels": [
+      "esencia_femenina"
+    ]
   }
 }

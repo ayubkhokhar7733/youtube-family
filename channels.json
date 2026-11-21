@@ -144,6 +144,22 @@
       "is_public_repo": true,
       "color": "rose",
       "badge": "FAMILY"
+    },
+    {
+      "id": "esencia_femenina",
+      "name": "Esencia Femenina oficial",
+      "owner": "Family",
+      "handle": "@mrxEF804",
+      "speaker": "Nilda Chiaraviglio & Expertas",
+      "language": "es",
+      "niche": "Psicología Femenina & Transformación Personal",
+      "schedule_hours": 72,
+      "prime_time_utc": 16,
+      "repo": "ayubkhokhar7733/channel-esencia-femenina",
+      "workflow": "repurpose.yml",
+      "is_public_repo": true,
+      "color": "purple",
+      "badge": "FAMILY"
     }
   ]
 }

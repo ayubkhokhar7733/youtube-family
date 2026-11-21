@@ -6,6 +6,22 @@
 // Default channels fallback
 const DEFAULT_CHANNELS = [
   {
+    id: "esencia_femenina",
+    name: "Esencia Femenina oficial",
+    owner: "Family",
+    handle: "@mrxEF804",
+    speaker: "Nilda Chiaraviglio & Expertas",
+    language: "es",
+    niche: "Psicología Femenina & Transformación Personal",
+    schedule_hours: 72,
+    prime_time_utc: 16,
+    repo: "ayubkhokhar7733/channel-esencia-femenina",
+    workflow: "repurpose.yml",
+    is_public_repo: true,
+    color: "purple",
+    badge: "FAMILY"
+  },
+  {
     id: "sabiduria_diaria",
     name: "Sabiduría Diaria",
     owner: "Ayub (Main)",
@@ -150,6 +166,14 @@ const UPLOAD_CHUNK_SIZE = 3 * 1024 * 1024; // 3 MB raw per chunk (~4 MB in base6
 
 // Client-side Users & Channel Permissions Directory
 const DEFAULT_CLIENT_USERS = {
+  esencia: {
+    id: "esencia",
+    name: "Esencia Femenina Member",
+    password: "esencia2026",
+    magicKey: "esencia-femenina-oficial-2026",
+    isAdmin: false,
+    channels: ["esencia_femenina"]
+  },
   admin: {
     id: "admin",
     name: "Ayub (Fleet Admin)",
