@@ -151,6 +151,52 @@ const DEFAULT_CHANNELS = [
     is_public_repo: true,
     color: "rose",
     badge: "FRIEND"
+  },
+  {
+    id: "sabiduria_femenina",
+    name: "Sabiduría Femenina 2026",
+    owner: "Brother",
+    handle: "@SabiduriaFemenina2026",
+    speaker: "Nilda Chiaraviglio & Psicólogas",
+    language: "es",
+    niche: "Psicología Femenina & Crecimiento Personal",
+    schedule_hours: 72,
+    repo: "ayubkhokhar7733/channel-sabiduria-femenina",
+    workflow: "repurpose.yml",
+    is_public_repo: true,
+    color: "rose",
+    badge: "FAMILY"
+  },
+  {
+    id: "esencia_femenina",
+    name: "Esencia Femenina oficial",
+    owner: "Family",
+    handle: "@mrxEF804",
+    speaker: "Nilda Chiaraviglio & Expertas",
+    language: "es",
+    niche: "Psicología Femenina & Transformación Personal",
+    schedule_hours: 72,
+    repo: "ayubkhokhar7733/channel-esencia-femenina",
+    workflow: "repurpose.yml",
+    is_public_repo: true,
+    color: "purple",
+    badge: "FAMILY"
+  },
+  {
+    id: "amor_propio_paz",
+    name: "Amor Propio y Paz",
+    owner: "Rashid Bukhari",
+    handle: "@AmorPropioyPaz-k8u",
+    channel_id: "UCXWJhYg7hspEpaZK12i9yMA",
+    speaker: "Dra. Nazareth Castellanos",
+    language: "es",
+    niche: "Neurociencia, Autoestima & Paz Mental",
+    schedule_hours: 72,
+    repo: "ayubkhokhar7733/channel-amor-propio-paz",
+    workflow: "repurpose.yml",
+    is_public_repo: true,
+    color: "teal",
+    badge: "FAMILY"
   }
 ];
 
@@ -253,6 +299,14 @@ const DEFAULT_CLIENT_USERS = {
     magicKey: "entrefases-oficial-2026",
     isAdmin: false,
     channels: ["entre_fases"]
+  },
+  rashid: {
+    id: "rashid",
+    name: "Rashid Bukhari (Amor Propio y Paz)",
+    password: "amor2026",
+    magicKey: "rashid-amor-propio-paz-2026",
+    isAdmin: false,
+    channels: ["amor_propio_paz"]
   }
 };
 

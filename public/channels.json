@@ -160,6 +160,23 @@
       "is_public_repo": true,
       "color": "purple",
       "badge": "FAMILY"
+    },
+    {
+      "id": "amor_propio_paz",
+      "name": "Amor Propio y Paz",
+      "owner": "Rashid Bukhari",
+      "handle": "@AmorPropioyPaz-k8u",
+      "channel_id": "UCXWJhYg7hspEpaZK12i9yMA",
+      "speaker": "Dra. Nazareth Castellanos",
+      "language": "es",
+      "niche": "Neurociencia, Autoestima & Paz Mental",
+      "schedule_hours": 72,
+      "prime_time_utc": 16,
+      "repo": "ayubkhokhar7733/channel-amor-propio-paz",
+      "workflow": "repurpose.yml",
+      "is_public_repo": true,
+      "color": "teal",
+      "badge": "FAMILY"
     }
   ]
 }

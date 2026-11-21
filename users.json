@@ -108,5 +108,15 @@
     "channels": [
       "esencia_femenina"
     ]
+  },
+  "rashid": {
+    "id": "rashid",
+    "name": "Rashid Bukhari (Amor Propio y Paz)",
+    "password": "amor2026",
+    "magicKey": "rashid-amor-propio-paz-2026",
+    "isAdmin": false,
+    "channels": [
+      "amor_propio_paz"
+    ]
   }
 }
