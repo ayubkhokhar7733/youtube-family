@@ -50,18 +50,18 @@ const DEFAULT_CHANNELS = [
     badge: "FAMILY"
   },
   {
-    id: "stoic_frontier",
-    name: "The Stoic Frontier",
+    id: "entre_fases",
+    name: "Entre Fases e Aprendizados",
     owner: "Waqar Chandiyo",
-    handle: "@TheStoicFrontier-r1c",
+    handle: "@EntreFases-b9x",
     channel_id: "UCsATd5NyooXnnSilgY0FK4Q",
-    speaker: "Marcus Aurelius / Seneca",
-    language: "en",
-    niche: "Stoic Philosophy & Resilience",
-    schedule_hours: 48,
-    repo: "ayubkhokhar7733/channel-stoic-frontier",
+    speaker: "Especialistas em Desenvolvimento Pessoal",
+    language: "pt",
+    niche: "Desenvolvimento Pessoal & Autoconhecimento",
+    schedule_hours: 72,
+    repo: "ayubkhokhar7733/channel-entre-fases",
     workflow: "repurpose.yml",
-    color: "indigo",
+    color: "amber",
     badge: "FAMILY"
   },
   {
@@ -240,11 +240,19 @@ const DEFAULT_CLIENT_USERS = {
   },
   waqar: {
     id: "waqar",
-    name: "Waqar Chandiyo",
-    password: "stoic2026",
-    magicKey: "waqar-stoic-frontier-5819",
+    name: "Waqar Chandiyo (Entre Fases)",
+    password: "fases2026",
+    magicKey: "waqar-entre-fases-5819",
     isAdmin: false,
-    channels: ["stoic_frontier"]
+    channels: ["entre_fases"]
+  },
+  entrefases: {
+    id: "entrefases",
+    name: "Entre Fases e Aprendizados",
+    password: "fases2026",
+    magicKey: "entrefases-oficial-2026",
+    isAdmin: false,
+    channels: ["entre_fases"]
   }
 };
 

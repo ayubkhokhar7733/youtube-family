@@ -81,12 +81,22 @@
   },
   "waqar": {
     "id": "waqar",
-    "name": "Waqar Chandiyo",
-    "password": "stoic2026",
-    "magicKey": "waqar-stoic-frontier-5819",
+    "name": "Waqar Chandiyo (Entre Fases)",
+    "password": "fases2026",
+    "magicKey": "waqar-entre-fases-5819",
     "isAdmin": false,
     "channels": [
-      "stoic_frontier"
+      "entre_fases"
+    ]
+  },
+  "entrefases": {
+    "id": "entrefases",
+    "name": "Entre Fases e Aprendizados",
+    "password": "fases2026",
+    "magicKey": "entrefases-oficial-2026",
+    "isAdmin": false,
+    "channels": [
+      "entre_fases"
     ]
   },
   "esencia": {
